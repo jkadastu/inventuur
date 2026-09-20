@@ -4,554 +4,738 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Triipkoodi mootorite test</title>
+<title>Inventuur — skanneri terminal</title>
 <style>
 :root{
   --bg:#16181A; --panel:#1F2225; --panel2:#272B2F; --line:#343A40;
   --text:#E8E6E3; --dim:#8E9499; --accent:#E0A33E; --ok:#6FA36F; --warn:#C25E4F; --blue:#5E8CA8;
   --mono:'SF Mono',Consolas,Menlo,monospace;
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:760px;margin:0 auto;padding:16px 14px 60px}
-h1{font-size:16px;margin:0 0 3px;font-weight:600}
-.sub{font-size:12px;color:var(--dim);margin-bottom:14px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:13px;margin-bottom:11px}
-.panel h2{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--dim);margin:0 0 9px;font-weight:600}
+.wrap{max-width:1140px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+h1{font-size:17px;margin:0;font-weight:600}
+.sub{font-size:12px;color:var(--dim)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:12px;color:var(--dim);margin:0 0 10px;font-weight:600}
+input[type=text],input[type=number]{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:8px 10px;font-size:14px;font-family:inherit}
 
-.videoBox{position:relative;background:#000;border-radius:6px;overflow:hidden;margin-bottom:10px;aspect-ratio:4/3}
-video{width:100%;height:100%;object-fit:cover;display:block}
-.videoBox .active-tag{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.65);color:var(--accent);
-  font-family:var(--mono);font-size:12px;padding:4px 9px;border-radius:4px;z-index:2}
-.videoBox .fps{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);color:var(--dim);
-  font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:4px;z-index:2}
-.videoBox .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px}
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.drops{grid-template-columns:1fr}}
+.drop{border:1.5px dashed var(--line);border-radius:6px;padding:18px 14px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover{border-color:var(--accent);background:var(--panel2)}
+.drop.over{border-color:var(--accent);background:#2E2A20}
+.drop.loaded{border-style:solid;border-color:var(--ok)}
+.drop .t{font-size:13px;font-weight:600;margin-bottom:4px}
+.drop .d{font-size:11px;color:var(--dim);line-height:1.5}
+.drop .st{font-size:11px;color:var(--ok);margin-top:6px;font-family:var(--mono)}
+.drop .st.err{color:var(--warn)}
 
-.engrow{display:flex;gap:7px;flex-wrap:wrap}
-.engbtn{flex:1;min-width:100px;background:var(--panel2);border:1px solid var(--line);color:var(--text);
-  border-radius:5px;padding:10px 8px;font-size:12px;cursor:pointer;text-align:center;position:relative}
-.engbtn b{display:block;font-size:13px;margin-bottom:2px}
-.engbtn small{color:var(--dim);font-size:10px}
-.engbtn.sel{border-color:var(--accent);background:#2E2A20}
-.engbtn.unavail{opacity:.4;cursor:not-allowed}
-.engbtn .dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--warn)}
-.engbtn.avail .dot{background:var(--ok)}
+/* location bar */
+.locbar{background:linear-gradient(90deg,#2A2E22,#1F2225);border:1px solid var(--accent);border-radius:6px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.locbar .lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+.locbar .cur{font-size:19px;font-weight:600;color:var(--accent);font-family:var(--mono)}
+.locbar input{flex:1;min-width:150px}
 
-.controlrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px}
-select,input[type=range]{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:7px 8px;font-size:12px}
-button{background:var(--accent);color:#16181A;border:none;border-radius:4px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer}
+.scanbox{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:14px;margin-bottom:12px}
+#scan{width:100%;font-size:21px;padding:13px;font-family:var(--mono);letter-spacing:.5px}
+#scan:focus{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:11px;color:var(--dim);margin-top:7px;line-height:1.5}
+
+.card{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:5px;padding:14px;margin-top:12px;display:none}
+.card.show{display:block}
+.card.unknown{border-left-color:var(--warn)}
+.card .code{font-family:var(--mono);font-size:15px;color:var(--accent)}
+.card .name{font-size:15px;margin:4px 0 10px;line-height:1.4}
+.card .meta{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:12px}
+.card .meta b{display:block;font-size:17px;color:var(--text);font-family:var(--mono);margin-top:2px}
+.dupwarn{background:#2E2620;border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:9px 11px;margin-bottom:11px;font-size:12px;line-height:1.6}
+.dupwarn .h{color:var(--accent);font-weight:600;margin-bottom:3px}
+.dupwarn .l{font-family:var(--mono);color:var(--text)}
+.qtyrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qtyrow input{width:100px;font-size:19px;padding:8px;text-align:center;font-family:var(--mono)}
+.qtyrow input.unset{color:var(--dim)}
+.step{width:44px;height:44px;font-size:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:4px;cursor:pointer}
+.step:hover{background:#31363B}
+.step.sm{width:30px;height:30px;font-size:15px}
+
+button{background:var(--accent);color:#16181A;border:none;border-radius:4px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{filter:brightness(1.1)}
 button.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
-button:disabled{opacity:.4;cursor:not-allowed}
-label.zoom{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim)}
+button.sec:hover{background:#31363B}
 
-.caps{font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--dim)}
-.caps .yes{color:var(--ok)} .caps .no{color:var(--warn)}
-.caps b{color:var(--text)}
+.scanrow{display:flex;gap:8px}
+.scanrow input{flex:1}
+.camBtn{flex-shrink:0;width:54px;font-size:20px;padding:0;background:var(--panel2);border:1px solid var(--accent);color:var(--accent)}
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
-.stat{background:var(--panel2);border-radius:4px;padding:8px 10px}
-.stat .l{font-size:10px;color:var(--dim);text-transform:uppercase}
-.stat .v{font-family:var(--mono);font-size:16px;margin-top:2px}
+.camModal{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column}
+.camModal.show{display:flex}
+.camModal video{flex:1;width:100%;object-fit:cover;background:#000}
+.camTop{position:absolute;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 12px;
+  background:linear-gradient(180deg,rgba(0,0,0,.75),transparent);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.camTop .msg{color:#fff;font-size:13px;flex:1;padding-right:10px}
+.camClose{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:18px;flex-shrink:0}
+.camFrame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:78%;max-width:340px;aspect-ratio:5/3;
+  border:2px solid var(--accent);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+.camBottom{position:absolute;bottom:0;left:0;right:0;padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 16px);
+  background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);text-align:center}
+.camBottom .hint{color:#ccc;font-size:12px}
+.camControls{display:none;max-width:520px;margin:10px auto 0;padding:10px 12px;background:rgba(20,20,20,.78);border:1px solid rgba(255,255,255,.18);border-radius:8px;text-align:left}
+.camControls.show{display:block}
+.focusRow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;color:#fff;font-size:12px}
+.focusRow input[type=range]{width:100%;accent-color:var(--accent)}
+.focusVal{font-family:var(--mono);min-width:58px;text-align:right;color:var(--accent)}
+.camActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.camActions button{padding:8px 11px;font-size:12px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.camActions button.active{background:var(--accent);color:#16181A;border-color:var(--accent)}
+.camTech{margin-top:7px;color:#aaa;font-size:10px;font-family:var(--mono);line-height:1.35;word-break:break-word}
 
-.cmptable{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
-.cmptable th{text-align:left;color:var(--dim);font-size:10px;padding:5px 7px;border-bottom:1px solid var(--line)}
-.cmptable td{padding:6px 7px;border-bottom:1px solid #262A2E;font-family:var(--mono)}
-.cmptable td.ok{color:var(--ok)} .cmptable td.fail{color:var(--warn)}
+#search{width:100%}
+.results{margin-top:8px;max-height:280px;overflow-y:auto}
+.res{padding:9px 10px;border-bottom:1px solid #2A2E32;cursor:pointer;font-size:13px}
+.res:hover{background:var(--panel2)}
+.res .top{display:flex;justify-content:space-between;gap:10px}
+.res .c{font-family:var(--mono);color:var(--dim);flex-shrink:0}
+.res .stats{font-size:11px;color:var(--dim);margin-top:3px;font-family:var(--mono);display:flex;gap:14px;flex-wrap:wrap}
 
-.log{max-height:200px;overflow-y:auto;font-family:var(--mono);font-size:11px}
-.log .row{padding:5px 6px;border-bottom:1px solid #262A2E;display:flex;gap:8px;justify-content:space-between}
-.log .row .eng{color:var(--blue);flex-shrink:0}
-.log .row .val{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.log .row .t{color:var(--dim);flex-shrink:0}
-.empty{color:var(--dim);font-size:12px;text-align:center;padding:14px}
-.note{font-size:11px;color:var(--dim);background:var(--panel2);border-left:2px solid var(--line);padding:8px 10px;border-radius:0 4px 4px 0;margin-top:8px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--dim);font-size:11px;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+th.n,td.n{text-align:right}
+td{padding:6px 8px;border-bottom:1px solid #262A2E;vertical-align:middle}
+tr:hover td{background:var(--panel2)}
+td.code{font-family:var(--mono);color:var(--dim);white-space:nowrap}
+td.n{font-family:var(--mono)}
+td.loc input{width:100%;min-width:80px;padding:4px 6px;font-size:12px;font-family:var(--mono);background:transparent;border:1px solid transparent;color:var(--blue)}
+td.loc input:hover{border-color:var(--line)}
+td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
+.tbl-wrap{max-height:440px;overflow-y:auto}
+.over{color:var(--accent)} .under{color:var(--warn)} .match{color:var(--ok)} .unset{color:var(--dim)}
+.sumbar{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:10px}
+.sumbar b{color:var(--text);font-family:var(--mono)}
+.progress{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-bottom:12px}
+.progress span{display:block;height:100%;background:var(--ok);transition:width .3s}
+.empty{text-align:center;color:var(--dim);font-size:13px;padding:24px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:13px;margin-top:14px}
+.save-ind{font-size:11px;color:var(--dim);font-family:var(--mono)}
+.badge{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--panel2);color:var(--dim);margin-left:5px}
+.badge.dup{background:#3A2F20;color:var(--accent)}
+.note{font-size:11px;color:var(--dim);background:var(--panel2);border-left:2px solid var(--line);padding:8px 10px;border-radius:0 4px 4px 0;margin-top:9px;line-height:1.55}
+.del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px}
+.del:hover{color:var(--warn)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Triipkoodi mootorite test</h1>
-  <div class="sub">Võrdle Native (Google), ZXing-js ja ZBar-wasm — sama kaadri peal</div>
 
-  <div class="panel">
-    <div class="videoBox" id="videoBox">
-      <video id="cam" playsinline muted autoplay></video>
-      <div class="active-tag" id="activeTag">kaamera väljas</div>
-      <div class="fps" id="fpsTag">— fps</div>
-      <div class="off" id="offMsg">Vajuta "Käivita kaamera"</div>
-    </div>
-    <div class="controlrow">
-      <button id="btnStart">Käivita kaamera</button>
-      <button class="sec" id="btnStop" disabled>Peata</button>
-      <button class="sec" id="btnTorch" disabled>🔦 Torch</button>
-      <select id="resSel">
-        <option value="640,480">640×480</option>
-        <option value="1280,720" selected>1280×720</option>
-        <option value="1920,1080">1920×1080</option>
-      </select>
-    </div>
-    <label class="zoom" id="zoomRow" style="display:none">Suum <input type="range" id="zoomSlider" min="1" max="1" step="0.1" value="1"> <span id="zoomVal">1.0×</span></label>
-    <label class="zoom" id="focusRow" style="display:none">Fookus <input type="range" id="focusSlider" min="0" max="1" step="0.01" value="0"> <span id="focusVal">—</span></label>
-    <div class="controlrow" id="afScanRow" style="display:none;margin-top:6px">
-      <button class="sec" id="btnAfScan">🎯 Automaatne fookuse-otsing</button>
-      <span id="afScanStatus" style="font-size:11px;color:var(--dim)"></span>
+<header>
+  <div><h1>Inventuur — skanneri terminal</h1>
+  <div class="sub">Bluetooth HID skanner · asukohapõhine lugemine</div></div>
+  <div class="save-ind" id="saveInd">—</div>
+</header>
+
+<div class="panel">
+  <h2>Tehnik</h2>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <input type="text" id="tech" placeholder="Tehniku nimi" style="flex:1;min-width:150px">
+    <input type="text" id="sdate" placeholder="Kuupäev" style="flex:1;min-width:120px">
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Andmefailid — lohista failid siia</h2>
+  <div class="drops">
+    <div class="drop" id="dropPrice"><div class="t">Hinnakiri</div>
+      <div class="d">Part # · Product · Bar Code<br>Lohista fail või klõpsa</div>
+      <div class="st" id="stPrice"></div></div>
+    <div class="drop" id="dropStock"><div class="t">Laoseis</div>
+      <div class="d">Part # · Product · Quantity Available<br>Lohista fail või klõpsa</div>
+      <div class="st" id="stStock"></div></div>
+  </div>
+  <input type="file" id="filePrice" accept=".csv,.txt,.tsv" hidden>
+  <input type="file" id="fileStock" accept=".csv,.txt,.tsv" hidden>
+  <div class="note">Failid loetakse ainult sinu arvutis. UTF-16 ja TAB-eraldus tuvastatakse automaatselt.</div>
+</div>
+
+<div class="locbar">
+  <div>
+    <div class="lbl">Praegune asukoht</div>
+    <div class="cur" id="curLoc">— määramata —</div>
+  </div>
+  <input type="text" id="locInput" placeholder="nt. Riiul 2, Sahtel A, Põrand…">
+  <button id="btnSetLoc">Määra asukoht</button>
+</div>
+
+<div class="scanbox">
+  <h2 style="font-size:12px;color:var(--dim);margin:0 0 9px;font-weight:600">Skanni artikkel</h2>
+  <div class="scanrow">
+    <input type="text" id="scan" placeholder="Skanni või trüki artikli nr / EAN…" autocomplete="off">
+    <button class="camBtn" id="btnCam" title="Skanni kaameraga">📷</button>
+  </div>
+  <div class="hint">Bluetooth HID skanner töötab klaviatuurina — hoia väli fookuses. Või kasuta 📷 telefoni kaamera lugemiseks. Kogus jääb märkeni „−", kuni sisestad tegeliku arvu.</div>
+  <div class="card" id="card"></div>
+</div>
+
+<div class="panel">
+  <h2>Otsi / kontrolli artiklit</h2>
+  <input type="text" id="search" placeholder="Otsi artikli numbri või nimetuse järgi…" autocomplete="off">
+  <div class="results" id="results"></div>
+</div>
+
+<div class="panel">
+  <h2>Loetud artiklid</h2>
+  <div class="sumbar" id="sumbar"></div>
+  <div class="progress"><span id="progBar" style="width:0%"></span></div>
+  <div class="tbl-wrap" id="tblWrap"><div class="empty">Loetud artiklid ilmuvad siia.</div></div>
+  <div class="actions">
+    <button id="btnCsv">Ekspordi CSV</button>
+    <button class="sec" id="btnJson">Salvesta varukoopia (.json)</button>
+    <button class="sec" id="btnLoad">Laadi varukoopia</button>
+    <button class="sec" id="btnClear">Tühjenda loetud</button>
+    <input type="file" id="fileJson" accept=".json" hidden>
+  </div>
+</div>
+
+</div>
+
+<div class="camModal" id="camModal">
+  <video id="camVideo" playsinline muted autoplay></video>
+  <div class="camFrame"></div>
+  <div class="camTop">
+    <div class="msg" id="camMsg">Käivitan kaamera…</div>
+    <button class="camClose" id="camClose">✕</button>
+  </div>
+  <div class="camBottom">
+    <div class="hint">Suuna kaamera otse triipkoodile, hoia telefon paigal</div>
+    <div class="camControls" id="camControls">
+      <div class="focusRow">
+        <label for="focusSlider">Fookus</label>
+        <input type="range" id="focusSlider" min="0" max="1" step="0.01" value="0">
+        <span class="focusVal" id="focusVal">—</span>
+      </div>
+      <div class="camActions">
+        <button type="button" id="btnAutoFocus">Automaatfookus</button>
+        <button type="button" id="btnRefocus">Fokusseeri uuesti</button>
+        <button type="button" id="btnTorch" style="display:none">Taskulamp</button>
+      </div>
+      <div class="camTech" id="camTech"></div>
     </div>
   </div>
-
-  <div class="panel">
-    <h2>Aktiivne mootor (pidev tuvastus)</h2>
-    <div class="engrow">
-      <div class="engbtn sel" data-eng="native"><div class="dot"></div><b>Native</b><small>BarcodeDetector / Google</small></div>
-      <div class="engbtn" data-eng="zxing"><div class="dot"></div><b>ZXing-js</b><small id="zxingStatus">laadin…</small></div>
-      <div class="engbtn" data-eng="zbar"><div class="dot"></div><b>ZBar-wasm</b><small id="zbarStatus">laadin…</small></div>
-    </div>
-    <div class="controlrow" style="margin-top:9px">
-      <button class="sec" id="btnRetryLoad">🔄 Laadi mootorid uuesti</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Pideva tuvastuse statistika</h2>
-    <div class="stats">
-      <div class="stat"><div class="l">Katseid</div><div class="v" id="statAttempts">0</div></div>
-      <div class="stat"><div class="l">Tabamusi</div><div class="v" id="statHits">0</div></div>
-      <div class="stat"><div class="l">Viim. kestus</div><div class="v" id="statLast">—</div></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Võrdle kõiki mootoreid — sama kaader</h2>
-    <button id="btnCompare" disabled>📸 Jäädvusta ja võrdle kõiki</button>
-    <div id="cmpResult"></div>
-  </div>
-
-  <div class="panel">
-    <h2>Kaamera võimekus (getCapabilities)</h2>
-    <div class="caps" id="capsBox">Ava kaamera, et näha seadme tegelikke võimalusi.</div>
-  </div>
-
-  <div class="panel">
-    <h2>Tuvastuste logi</h2>
-    <div class="log" id="logBox"><div class="empty">Tuvastused ilmuvad siia.</div></div>
-  </div>
-
-  <div class="note">See on diagnostika-tööriist, mitte inventuuri-äpp. Eesmärk: näha täpselt, milline mootor on aktiivne, kas riistvara üldse toetab fookuse juhtimist (vt "Kaamera võimekus"), ja võrrelda kolme mootorit täpselt sama kaadri peal.</div>
 </div>
 
 <script>
 'use strict';
+const LS_KEY='inventuur_v2';
 
-let stream=null, track=null, activeEngine='native', running=false;
-let zxingReader=null, zbarTimer=null, zxingControls=null;
-let nativeDetector=null;
-let stats={attempts:0,hits:0};
-let fpsCounter=0, fpsLast=performance.now();
+let names={}, stock={}, eanMap={};
+let entries=[];          // {id, part, loc, qty}  qty=null => not yet entered
+let activeId=null, curLoc='', searchIndex=[], seq=1;
 
-const video=document.getElementById('cam');
-const activeTag=document.getElementById('activeTag');
-const fpsTag=document.getElementById('fpsTag');
-const offMsg=document.getElementById('offMsg');
-const logBox=document.getElementById('logBox');
-
-/* ---------- dynamic engine script loading with fallback CDNs ---------- */
-function loadScript(url){
-  return new Promise((resolve,reject)=>{
-    const s=document.createElement('script');
-    s.src=url;
-    s.onload=()=>resolve(url);
-    s.onerror=()=>reject(new Error('ei laadinud: '+url));
-    document.head.appendChild(s);
-  });
+/* ---------- file reading ---------- */
+function readFile(file,cb){
+  const fr=new FileReader();
+  fr.onload=e=>{
+    const b=new Uint8Array(e.target.result);
+    let t;
+    if(b[0]===0xFF&&b[1]===0xFE) t=new TextDecoder('utf-16le').decode(b);
+    else if(b[0]===0xFE&&b[1]===0xFF) t=new TextDecoder('utf-16be').decode(b);
+    else t=new TextDecoder('utf-8').decode(b);
+    cb(t);
+  };
+  fr.readAsArrayBuffer(file);
 }
-async function loadEngineScripts(){
-  document.getElementById('zxingStatus').textContent='laadin…';
-  document.getElementById('zbarStatus').textContent='laadin…';
+function parseTable(text){
+  text=text.replace(/^\uFEFF/,'').replace(/\r/g,'');
+  const f=text.split('\n')[0];
+  const c={'\t':(f.match(/\t/g)||[]).length,';':(f.match(/;/g)||[]).length,',':(f.match(/,/g)||[]).length};
+  const d=Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
+  return text.split('\n').filter(l=>l.trim()).map(l=>l.split(d).map(x=>x.trim().replace(/^"|"$/g,'')));
+}
+function findCol(h,keys){const l=h.map(x=>x.toLowerCase());for(const k of keys){const i=l.findIndex(x=>x.includes(k));if(i>=0)return i;}return -1;}
+function num(v){if(!v)return 0;const n=parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.'));return isNaN(n)?0:n;}
 
-  // ZXing: proovi jsDelivr, siis unpkg varuvariandina
-  if(typeof ZXingBrowser==='undefined'){
+function setupDrop(z,i,h){
+  const zone=document.getElementById(z),inp=document.getElementById(i);
+  zone.addEventListener('click',()=>inp.click());
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');if(e.dataTransfer.files[0])h(e.dataTransfer.files[0],zone)});
+  inp.addEventListener('change',e=>{if(e.target.files[0])h(e.target.files[0],zone)});
+}
+
+setupDrop('dropPrice','filePrice',(file,zone)=>{
+  readFile(file,text=>{
     try{
-      await loadScript('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js');
-    }catch(e1){
-      logLine('system','ZXing jsDelivr ebaõnnestus, proovin unpkg…',0);
-      try{ await loadScript('https://unpkg.com/@zxing/browser@latest'); }
-      catch(e2){ logLine('system','ZXing laadimine ebaõnnestus mõlemalt CDN-ilt: '+e2.message,0); }
-    }
-  }
-  // ZBar: proovi jsDelivr, siis unpkg
-  if(typeof zbarWasm==='undefined'){
-    try{
-      await loadScript('https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js');
-    }catch(e1){
-      logLine('system','ZBar jsDelivr ebaõnnestus, proovin unpkg…',0);
-      try{ await loadScript('https://unpkg.com/@undecaf/zbar-wasm@0.11.0/dist/index.js'); }
-      catch(e2){ logLine('system','ZBar laadimine ebaõnnestus mõlemalt CDN-ilt: '+e2.message,0); }
-    }
-  }
-  checkAvail();
-}
-document.getElementById('btnRetryLoad').addEventListener('click', loadEngineScripts);
-
-/* ---------- engine availability ---------- */
-function checkAvail(){
-  const nativeOk = 'BarcodeDetector' in window;
-  const zxingOk = typeof ZXingBrowser !== 'undefined';
-  // zbar-wasm laeb oma wasm-mooduli asünkroonselt isegi pärast script.onload-i
-  const zbarOk = typeof zbarWasm !== 'undefined' && typeof zbarWasm.scanImageData === 'function';
-  markEngine('native', nativeOk);
-  markEngine('zxing', zxingOk);
-  markEngine('zbar', zbarOk);
-  document.getElementById('zxingStatus').textContent = zxingOk ? 'laetud ✓' : 'ei laadinud ✗';
-  document.getElementById('zbarStatus').textContent = zbarOk ? 'laetud ✓' : 'ei laadinud ✗';
-}
-function markEngine(id, ok){
-  const el = document.querySelector(`.engbtn[data-eng="${id}"]`);
-  el.classList.toggle('avail', ok);
-  el.classList.toggle('unavail', !ok);
-}
-// zbar-wasm laeb wasm-mooduli asünkroonselt — kontrolli mitu korda
-loadEngineScripts();
-setTimeout(checkAvail, 1200);
-setTimeout(checkAvail, 3000);
-
-document.querySelectorAll('.engbtn').forEach(el=>{
-  el.addEventListener('click', ()=>{
-    if(el.classList.contains('unavail')){ logLine('system', 'See mootor pole selles brauseris saadaval', 0); return; }
-    document.querySelectorAll('.engbtn').forEach(x=>x.classList.remove('sel'));
-    el.classList.add('sel');
-    activeEngine = el.dataset.eng;
-    activeTag.textContent = running ? 'aktiivne: '+activeEngine : 'kaamera väljas';
-    if(running) restartLoop();
+      const rows=parseTable(text),h=rows[0];
+      const cP=findCol(h,['part','artikk','kood']), cN=findCol(h,['product','nimet','description']), cB=findCol(h,['bar code','barcode','ean','triipkood']);
+      if(cP<0) throw new Error('Artikli veergu ei leitud');
+      let ean=0,sci=0;
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
+        const nm=cN>=0?(r[cN]||'').trim():''; if(nm&&!names[p])names[p]=nm;
+        if(cB>=0){const b=(r[cB]||'').trim();
+          if(b&&/^\d{6,14}$/.test(b)){if(!eanMap[b]){eanMap[b]=p;ean++}}
+          else if(b&&/E\+/i.test(b))sci++;}
+      }
+      rebuildIndex(); zone.classList.add('loaded');
+      let m=`${Object.keys(names).length} nimetust, ${ean} EAN-koodi`;
+      document.getElementById('stPrice').innerHTML=sci>0?m+`<br><span style="color:var(--warn)">⚠ ${sci} EAN rikutud (Excel: 7,32E+12)</span>`:m;
+      render(); save();
+    }catch(e){const el=document.getElementById('stPrice');el.className='st err';el.textContent='Viga: '+e.message}
   });
 });
-
-/* ---------- camera lifecycle ---------- */
-document.getElementById('btnStart').addEventListener('click', startCamera);
-document.getElementById('btnStop').addEventListener('click', stopCamera);
-
-async function startCamera(){
-  const [w,h] = document.getElementById('resSel').value.split(',').map(Number);
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({video:{
-      facingMode:{ideal:'environment'}, width:{ideal:w}, height:{ideal:h},
-      advanced:[{focusMode:'continuous'},{exposureMode:'continuous'},{whiteBalanceMode:'continuous'}]
-    }});
-  }catch(err){ alert('Kaamera viga: '+err.message); return; }
-  video.srcObject=stream;
-  try{ await video.play(); }catch(e){}
-  track = stream.getVideoTracks()[0];
-  await forceContinuousAF();
-  showCapabilities();
-  setupTorchZoom();
-
-  offMsg.style.display='none';
-  document.getElementById('btnStart').disabled=true;
-  document.getElementById('btnStop').disabled=false;
-  document.getElementById('btnCompare').disabled=false;
-  running=true;
-  activeTag.textContent='aktiivne: '+activeEngine;
-  restartLoop();
-}
-
-function stopCamera(){
-  running=false;
-  stopLoop();
-  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  track=null;
-  video.srcObject=null;
-  offMsg.style.display='flex';
-  document.getElementById('btnStart').disabled=false;
-  document.getElementById('btnStop').disabled=true;
-  document.getElementById('btnCompare').disabled=true;
-  document.getElementById('btnTorch').disabled=true;
-  document.getElementById('zoomRow').style.display='none';
-  activeTag.textContent='kaamera väljas';
-  fpsTag.textContent='— fps';
-}
-
-async function forceContinuousAF(){
-  try{
-    if(!track || !track.getCapabilities) return;
-    const caps=track.getCapabilities(), advanced=[];
-    if(caps.focusMode && caps.focusMode.includes('continuous')) advanced.push({focusMode:'continuous'});
-    if(caps.exposureMode && caps.exposureMode.includes('continuous')) advanced.push({exposureMode:'continuous'});
-    if(caps.whiteBalanceMode && caps.whiteBalanceMode.includes('continuous')) advanced.push({whiteBalanceMode:'continuous'});
-    if(advanced.length) await track.applyConstraints({advanced});
-  }catch(e){}
-}
-
-function showCapabilities(){
-  const box=document.getElementById('capsBox');
-  if(!track || !track.getCapabilities){ box.textContent='getCapabilities() pole selles brauseris toetatud.'; return; }
-  const caps=track.getCapabilities();
-  const fmt=(k,label)=>{
-    const v=caps[k];
-    const has = v!==undefined && (Array.isArray(v)?v.length>0:true);
-    return `<div><b>${label}:</b> <span class="${has?'yes':'no'}">${has?JSON.stringify(v):'ei toetata'}</span></div>`;
-  };
-  box.innerHTML = [
-    fmt('focusMode','focusMode (fookuse juhtimine)'),
-    fmt('focusDistance','focusDistance'),
-    fmt('exposureMode','exposureMode'),
-    fmt('whiteBalanceMode','whiteBalanceMode'),
-    fmt('zoom','zoom'),
-    fmt('torch','torch (välk)'),
-    fmt('width','laius'),
-    fmt('height','kõrgus'),
-    fmt('frameRate','frameRate'),
-  ].join('');
-  if(!(caps.focusMode && caps.focusMode.length)){
-    box.innerHTML += `<div class="note" style="margin-top:8px">⚠ See kaamera/brauser ei anna veebilehele üldse fookuse juhtimise võimalust (focusMode puudub) — see selgitab, miks fookuse-koodi muudatused mõju ei avaldanud. Tegu on riistvara/OS piiranguga, mitte tarkvara veaga.</div>`;
-  }else if(!caps.focusMode.includes('continuous')){
-    box.innerHTML += `<div class="note" style="margin-top:8px">⚠ See seade paljastab veebile ainult <b>${esc(JSON.stringify(caps.focusMode))}</b> režiimi(d), mitte "continuous" — nii ei saagi automaatne pidev autofookus veebilehelt tööle hakata, hoolimata sellest, et native kaamera-äpp seda kasutab. Kasuta allpool käsitsi fookuse-liugurit või "Automaatne fookuse-otsing" nuppu, mis proovib mitut fookuskaugust järjest.</div>`;
-  }
-}
-
-function setupTorchZoom(){
-  const caps = track.getCapabilities ? track.getCapabilities() : {};
-  const torchBtn=document.getElementById('btnTorch');
-  torchBtn.disabled = !caps.torch;
-  let torchOn=false;
-  torchBtn.onclick=async()=>{
-    torchOn=!torchOn;
-    try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); }catch(e){}
-  };
-  const zoomRow=document.getElementById('zoomRow'), zoomSlider=document.getElementById('zoomSlider');
-  if(caps.zoom && caps.zoom.min!==undefined){
-    zoomRow.style.display='flex';
-    zoomSlider.min=caps.zoom.min; zoomSlider.max=caps.zoom.max; zoomSlider.step=caps.zoom.step||0.1;
-    zoomSlider.value=caps.zoom.min;
-    zoomSlider.oninput=async()=>{
-      document.getElementById('zoomVal').textContent=parseFloat(zoomSlider.value).toFixed(1)+'×';
-      try{ await track.applyConstraints({advanced:[{zoom:parseFloat(zoomSlider.value)}]}); }catch(e){}
-    };
-  }else{ zoomRow.style.display='none'; }
-
-  // fookus: kui riistvara pakub AINULT 'manual' (mitte 'continuous'), näita käsitsi liugurit + automaatset otsingut
-  const focusRow=document.getElementById('focusRow'), focusSlider=document.getElementById('focusSlider');
-  const afScanRow=document.getElementById('afScanRow');
-  const supportsManualFocus = caps.focusMode && caps.focusMode.includes('manual') && caps.focusDistance && caps.focusDistance.min!==undefined;
-  if(supportsManualFocus){
-    focusRow.style.display='flex';
-    afScanRow.style.display='flex';
-    focusSlider.min=caps.focusDistance.min; focusSlider.max=caps.focusDistance.max; focusSlider.step=caps.focusDistance.step||0.01;
-    focusSlider.value=caps.focusDistance.min;
-    focusSlider.oninput=async()=>{
-      document.getElementById('focusVal').textContent=parseFloat(focusSlider.value).toFixed(2);
-      try{ await track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:parseFloat(focusSlider.value)}]}); }
-      catch(e){ document.getElementById('focusVal').textContent='viga'; }
-    };
-  }else{
-    focusRow.style.display='none'; afScanRow.style.display='none';
-  }
-}
-
-// "bracket scan" — läbib mitu fookuskaugust ja proovib igal peatusel koodi lugeda,
-// kuni üks õnnestub. Emuleerib autofookust seadmel, mis ei paljasta 'continuous' režiimi.
-document.getElementById('btnAfScan').addEventListener('click', afScan);
-async function afScan(){
-  if(!track || !track.getCapabilities) return;
-  const caps=track.getCapabilities();
-  if(!caps.focusDistance) return;
-  const {min,max}=caps.focusDistance;
-  const steps=10;
-  const statusEl=document.getElementById('afScanStatus');
-  const btn=document.getElementById('btnAfScan');
-  btn.disabled=true;
-  for(let i=0;i<=steps;i++){
-    const dist = min + (max-min)*(i/steps);
-    statusEl.textContent = `proovin ${dist.toFixed(2)} (${i+1}/${steps+1})…`;
-    try{ await track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:dist}]}); }catch(e){}
-    await sleep(260);  // anna läätsele aega liikuda ja sensorile särituseks
-    const hit = await tryDecodeOnce();
-    if(hit){
-      statusEl.textContent = `✓ leitud fookuskaugusel ${dist.toFixed(2)}`;
-      document.getElementById('focusSlider').value = dist;
-      document.getElementById('focusVal').textContent = dist.toFixed(2);
-      btn.disabled=false;
-      return;
-    }
-  }
-  statusEl.textContent = 'koodi ei leitud üheski fookuspunktis — proovi lähemale/kaugemale astuda';
-  btn.disabled=false;
-}
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-
-// üks kiire dekodeerimiskatse aktiivse mootoriga (kasutab bracket-scan'i sees)
-async function tryDecodeOnce(){
-  try{
-    const canvas=document.createElement('canvas');
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-    if(!canvas.width) return false;
-    canvas.getContext('2d').drawImage(video,0,0);
-    if(activeEngine==='native' && 'BarcodeDetector' in window){
-      if(!nativeDetector) nativeDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']});
-      const codes=await nativeDetector.detect(canvas);
-      if(codes&&codes.length){ stats.hits++; logLine('native (AF-scan)', codes[0].rawValue, 0); updateStats(); return true; }
-    }else if(activeEngine==='zxing' && typeof ZXingBrowser!=='undefined'){
-      if(!zxingReader) zxingReader=new ZXingBrowser.BrowserMultiFormatReader();
-      try{
-        const res=await zxingReader.decodeFromCanvas(canvas);
-        if(res){ stats.hits++; logLine('zxing (AF-scan)', res.getText(), 0); updateStats(); return true; }
-      }catch(e){}
-    }else if(activeEngine==='zbar' && typeof zbarWasm!=='undefined'){
-      const imgData=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height);
-      const symbols=await zbarWasm.scanImageData(imgData);
-      if(symbols&&symbols.length){ stats.hits++; logLine('zbar (AF-scan)', symbols[0].decode(), 0); updateStats(); return true; }
-    }
-  }catch(e){}
-  return false;
-}
-
-/* ---------- continuous detection loops ---------- */
-function restartLoop(){
-  stopLoop();
-  stats={attempts:0,hits:0}; updateStats();
-  if(activeEngine==='native') loopNative();
-  else if(activeEngine==='zxing') loopZXing();
-  else if(activeEngine==='zbar') loopZBar();
-}
-function stopLoop(){
-  if(zxingControls){ try{zxingControls.stop();}catch(e){} zxingControls=null; }
-  if(zbarTimer){ clearTimeout(zbarTimer); zbarTimer=null; }
-}
-
-async function loopNative(){
-  if(!('BarcodeDetector' in window)) return;
-  if(!nativeDetector) nativeDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']});
-  async function tick(){
-    if(!running || activeEngine!=='native') return;
-    countFrame();
-    const t0=performance.now();
+setupDrop('dropStock','fileStock',(file,zone)=>{
+  readFile(file,text=>{
     try{
-      if(video.readyState>=2){
-        stats.attempts++;
-        const codes=await nativeDetector.detect(video);
-        const dt=(performance.now()-t0).toFixed(1);
-        document.getElementById('statLast').textContent=dt+'ms';
-        if(codes && codes.length){ stats.hits++; logLine('native', codes[0].rawValue, dt); }
+      const rows=parseTable(text),h=rows[0];
+      const cP=findCol(h,['part','artikk','kood']),cN=findCol(h,['product','nimet','description']),cQ=findCol(h,['quantity available','laoseis','kogus','qty','total in van']);
+      if(cP<0) throw new Error('Artikli veergu ei leitud');
+      let n=0;
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
+        stock[p]=cQ>=0?num(r[cQ]):0;
+        const nm=cN>=0?(r[cN]||'').trim():''; if(nm)names[p]=nm;
+        n++;
       }
-    }catch(e){}
-    updateStats();
-    if(running && activeEngine==='native') requestAnimationFrame(tick);
-  }
-  tick();
-}
-
-async function loopZXing(){
-  if(typeof ZXingBrowser==='undefined') return;
-  if(!zxingReader) zxingReader=new ZXingBrowser.BrowserMultiFormatReader();
-  const t0ref={t:performance.now()};
-  zxingControls = await zxingReader.decodeFromVideoElement(video,(result,err,controls)=>{
-    countFrame();
-    stats.attempts++;
-    const dt=(performance.now()-t0ref.t).toFixed(1); t0ref.t=performance.now();
-    document.getElementById('statLast').textContent=dt+'ms';
-    if(result){ stats.hits++; logLine('zxing', result.getText(), dt); }
-    updateStats();
+      rebuildIndex(); zone.classList.add('loaded');
+      document.getElementById('stStock').textContent=`${n} artiklit laoseisus`;
+      render(); save();
+    }catch(e){const el=document.getElementById('stStock');el.className='st err';el.textContent='Viga: '+e.message}
   });
+});
+function rebuildIndex(){
+  const s=new Set([...Object.keys(names),...Object.keys(stock)]);
+  searchIndex=[...s].map(p=>({p,n:names[p]||'',low:(p+' '+(names[p]||'')).toLowerCase()}));
 }
 
-function loopZBar(){
-  if(typeof zbarWasm==='undefined'){ return; }
-  const canvas=document.createElement('canvas');
-  const ctx=canvas.getContext('2d', {willReadFrequently:true});
-  async function tick(){
-    if(!running || activeEngine!=='zbar') return;
-    countFrame();
-    if(video.readyState>=2 && video.videoWidth){
-      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-      ctx.drawImage(video,0,0);
-      const t0=performance.now();
-      try{
-        stats.attempts++;
-        const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-        const symbols=await zbarWasm.scanImageData(imgData);
-        const dt=(performance.now()-t0).toFixed(1);
-        document.getElementById('statLast').textContent=dt+'ms';
-        if(symbols && symbols.length){ stats.hits++; logLine('zbar', symbols[0].decode(), dt); }
-      }catch(e){}
-      updateStats();
+/* ---------- location ---------- */
+const locInput=document.getElementById('locInput');
+function setLoc(){
+  const v=locInput.value.trim();
+  if(!v)return;
+  curLoc=v; locInput.value='';
+  document.getElementById('curLoc').textContent=curLoc;
+  document.getElementById('scan').focus();
+  save();
+}
+document.getElementById('btnSetLoc').addEventListener('click',setLoc);
+locInput.addEventListener('keydown',e=>{if(e.key==='Enter')setLoc()});
+
+/* ---------- entries helpers ---------- */
+// artiklit, mida laoseisu tabelis pole, käsitleme laokogusega 0
+function sq(p){return stock[p]!==undefined?stock[p]:0}
+// "jäänud lugeda" ja eksport arvestavad ainult artikleid, mille laokogus > 0
+function activeStockParts(){return Object.keys(stock).filter(p=>stock[p]>0)}
+function partEntries(p){return entries.filter(e=>e.part===p)}
+function partTotal(p){
+  const es=partEntries(p).filter(e=>e.qty!==null);
+  return es.length?es.reduce((a,e)=>a+e.qty,0):null;
+}
+function getEntry(id){return entries.find(e=>e.id===id)}
+
+/* ---------- scanning ---------- */
+const scanEl=document.getElementById('scan');
+scanEl.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const v=scanEl.value.trim();scanEl.value='';if(v)handleScan(resolve(v),v);}
+});
+scanEl.focus();
+document.addEventListener('click',e=>{if(!e.target.closest('input,button,.res,.drop'))setTimeout(()=>scanEl.focus(),40)});
+function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
+
+/* ---------- camera scanning (phone) ---------- */
+let camStream=null, camDetector=null, camActive=false, camTrack=null;
+let camCaps={}, torchOn=false, focusTimer=null;
+const camSupported = 'BarcodeDetector' in window && !!navigator.mediaDevices;
+document.getElementById('btnCam').style.display = camSupported ? '' : 'none';
+document.getElementById('btnCam').addEventListener('click', openCamera);
+document.getElementById('camClose').addEventListener('click', closeCamera);
+document.getElementById('btnAutoFocus').addEventListener('click', setAutoFocus);
+document.getElementById('btnRefocus').addEventListener('click', refocusCamera);
+document.getElementById('btnTorch').addEventListener('click', toggleTorch);
+document.getElementById('focusSlider').addEventListener('input', e=>{
+  const v=Number(e.target.value);
+  document.getElementById('focusVal').textContent=formatFocus(v);
+  clearTimeout(focusTimer);
+  focusTimer=setTimeout(()=>setManualFocus(v),70);
+});
+
+async function openCamera(){
+  const modal=document.getElementById('camModal'), msg=document.getElementById('camMsg');
+  modal.classList.add('show'); msg.textContent='Käivitan kaamera…';
+  resetCameraControls();
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:{ideal:'environment'},
+        width:{ideal:1920}, height:{ideal:1080},
+        frameRate:{ideal:30}
+      },
+      audio:false
+    });
+  }catch(err){
+    msg.textContent = 'Kaamerale ligipääs ebaõnnestus: '+err.message;
+    return;
+  }
+  const video=document.getElementById('camVideo');
+  video.srcObject=camStream;
+  try{ await video.play(); }catch(e){}
+  camTrack=camStream.getVideoTracks()[0] || null;
+  await configureCameraFocus();
+  if(!camDetector){
+    try{ camDetector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']}); }
+    catch(e){ msg.textContent='Kaamera triipkoodilugemine pole selles brauseris toetatud.'; return; }
+  }
+  msg.textContent='Suuna kaamera triipkoodile…';
+  camActive=true;
+  detectLoop();
+}
+
+async function configureCameraFocus(){
+  const controls=document.getElementById('camControls');
+  const tech=document.getElementById('camTech');
+  if(!camTrack || typeof camTrack.getCapabilities!=='function'){
+    tech.textContent='Brauser ei avalda kaamera fookuse juhtimist.';
+    controls.classList.add('show');
+    return;
+  }
+  try{ camCaps=camTrack.getCapabilities() || {}; }catch(e){ camCaps={}; }
+  const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
+  const fd=camCaps.focusDistance;
+  controls.classList.add('show');
+
+  if(modes.includes('continuous')){
+    try{ await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
+  }
+
+  if(fd && Number.isFinite(fd.min) && Number.isFinite(fd.max) && fd.max>fd.min && modes.includes('manual')){
+    const sl=document.getElementById('focusSlider');
+    const settings=camTrack.getSettings ? camTrack.getSettings() : {};
+    sl.min=fd.min; sl.max=fd.max; sl.step=fd.step || (fd.max-fd.min)/100;
+    sl.value=Number.isFinite(settings.focusDistance)?settings.focusDistance:fd.min;
+    sl.disabled=false;
+    document.getElementById('focusVal').textContent=formatFocus(Number(sl.value));
+  }else{
+    document.getElementById('focusSlider').disabled=true;
+    document.getElementById('focusVal').textContent='ei toetata';
+  }
+
+  const torchBtn=document.getElementById('btnTorch');
+  torchBtn.style.display=camCaps.torch ? '' : 'none';
+  const label=camTrack.label || 'tagakaamera';
+  tech.textContent=label+' | fookusrežiimid: '+(modes.join(', ')||'brauser ei avalda')+
+    (fd?` | kaugus ${fd.min}…${fd.max}`:'');
+  updateFocusButtons();
+}
+
+function formatFocus(v){ return Number.isFinite(v)?v.toFixed(2):'—'; }
+function updateFocusButtons(){
+  let mode='';
+  try{ mode=(camTrack&&camTrack.getSettings().focusMode)||''; }catch(e){}
+  document.getElementById('btnAutoFocus').classList.toggle('active', mode==='continuous');
+}
+async function setAutoFocus(){
+  if(!camTrack) return;
+  const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
+  if(!modes.includes('continuous')){
+    document.getElementById('camMsg').textContent='Pidev automaatfookus pole selle kaamera kaudu saadaval.';
+    return;
+  }
+  try{
+    await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]});
+    document.getElementById('camMsg').textContent='Automaatfookus aktiivne';
+    updateFocusButtons();
+  }catch(e){ document.getElementById('camMsg').textContent='Automaatfookuse muutmine ebaõnnestus'; }
+}
+async function refocusCamera(){
+  if(!camTrack) return;
+  const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
+  try{
+    if(modes.includes('single-shot')){
+      await camTrack.applyConstraints({advanced:[{focusMode:'single-shot'}]});
+      document.getElementById('camMsg').textContent='Fokusseerin…';
+      setTimeout(()=>setAutoFocus(),700);
+    }else if(modes.includes('continuous')){
+      await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]});
+      document.getElementById('camMsg').textContent='Automaatfookus lähtestatud';
+    }else{
+      document.getElementById('camMsg').textContent='Brauser ei võimalda fookuse käivitamist.';
     }
-    if(running && activeEngine==='zbar') zbarTimer=setTimeout(tick,180);
+  }catch(e){ document.getElementById('camMsg').textContent='Fokusseerimine ebaõnnestus'; }
+}
+async function setManualFocus(v){
+  if(!camTrack) return;
+  const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
+  if(!modes.includes('manual') || !camCaps.focusDistance) return;
+  try{
+    await camTrack.applyConstraints({advanced:[{focusMode:'manual',focusDistance:v}]});
+    document.getElementById('camMsg').textContent='Käsifookus: '+formatFocus(v);
+    updateFocusButtons();
+  }catch(e){ document.getElementById('camMsg').textContent='Käsifookust ei õnnestunud rakendada.'; }
+}
+async function toggleTorch(){
+  if(!camTrack || !camCaps.torch) return;
+  torchOn=!torchOn;
+  try{
+    await camTrack.applyConstraints({advanced:[{torch:torchOn}]});
+    document.getElementById('btnTorch').classList.toggle('active',torchOn);
+    document.getElementById('btnTorch').textContent=torchOn?'Taskulamp sees':'Taskulamp';
+  }catch(e){ torchOn=!torchOn; }
+}
+function resetCameraControls(){
+  camCaps={}; camTrack=null; torchOn=false;
+  document.getElementById('camControls').classList.remove('show');
+  document.getElementById('focusSlider').disabled=true;
+  document.getElementById('focusVal').textContent='—';
+  document.getElementById('camTech').textContent='';
+  document.getElementById('btnTorch').classList.remove('active');
+  document.getElementById('btnTorch').textContent='Taskulamp';
+}
+async function detectLoop(){
+  if(!camActive) return;
+  const video=document.getElementById('camVideo');
+  try{
+    if(video.readyState>=2){
+      const codes = await camDetector.detect(video);
+      if(codes && codes.length){
+        onCameraDetect(codes[0].rawValue);
+        return;
+      }
+    }
+  }catch(err){ /* mööda vahele jäänud kaader, jätkame */ }
+  if(camActive) requestAnimationFrame(detectLoop);
+}
+function onCameraDetect(val){
+  camActive=false;
+  if(navigator.vibrate) navigator.vibrate(70);
+  document.getElementById('camMsg').textContent = '✓ '+val;
+  closeCamera();
+  handleScan(resolve(val), val);
+}
+function closeCamera(){
+  camActive=false;
+  clearTimeout(focusTimer);
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  camTrack=null; camCaps={}; torchOn=false;
+  document.getElementById('camModal').classList.remove('show');
+}
+function handleScan(part,raw){
+  const existing=partEntries(part);
+  // same location already open for this part → reuse that entry
+  const sameLoc=existing.find(e=>e.loc===curLoc);
+  if(sameLoc){ openEntry(sameLoc.id,raw); return; }
+  const ent={id:seq++,part,loc:curLoc,qty:null};
+  entries.push(ent);
+  openEntry(ent.id,raw);
+}
+
+function openEntry(id,raw){
+  activeId=id;
+  const e=getEntry(id); if(!e)return;
+  const p=e.part;
+  const known=names[p]!==undefined||stock[p]!==undefined;
+  const others=partEntries(p).filter(x=>x.id!==id);
+  const viaEan=raw&&raw!==p;
+  const tot=partTotal(p);
+  const card=document.getElementById('card');
+  card.className='card show'+(known?'':' unknown');
+  card.innerHTML=`
+    <div class="code">${esc(p)}${viaEan?`<span class="badge">EAN ${esc(raw)}</span>`:''}${known?'':'<span class="badge" style="color:var(--warn)">hinnakirjas puudub</span>'}</div>
+    <div class="name">${esc(names[p]||'— nimetus puudub —')}</div>
+    ${others.length?`<div class="dupwarn">
+       <div class="h">⚠ Duplikaat — see artikkel on juba loetud mujal:</div>
+       ${others.map(o=>`<div class="l">${esc(o.loc||'(asukohata)')} → ${o.qty===null?'<span style="color:var(--dim)">kogus sisestamata</span>':o.qty+' tk'}</div>`).join('')}
+       <div style="color:var(--dim);margin-top:4px">Ekspordis liidetakse kogused automaatselt kokku.</div>
+     </div>`:''}
+    <div class="meta">
+      <div>Asukoht<b style="color:var(--blue)">${esc(e.loc||'—')}</b></div>
+      <div>Laoseisu järgi<b>${sq(p)}</b></div>
+      <div>Selles asukohas<b id="cvView">${e.qty===null?'−':e.qty}</b></div>
+      ${others.length?`<div>Kokku kõik asukohad<b id="cvTot">${tot===null?'−':tot}</b></div>`:''}
+      <div>Vahe<b id="cvDiff">—</b></div>
+    </div>
+    <div class="qtyrow">
+      <button class="step" onclick="bump(-1)">−</button>
+      <input type="number" id="qtyIn" placeholder="−" value="${e.qty===null?'':e.qty}" step="1" class="${e.qty===null?'unset':''}">
+      <button class="step" onclick="bump(1)">+</button>
+      <button onclick="document.getElementById('scan').focus()">Valmis</button>
+      ${camSupported?`<button class="sec" onclick="openCamera()">📷 Järgmine</button>`:''}
+    </div>`;
+  const qi=document.getElementById('qtyIn');
+  qi.addEventListener('input',()=>{
+    const v=qi.value.trim();
+    e.qty = v===''?null:(parseFloat(v)||0);
+    qi.classList.toggle('unset',e.qty===null);
+    refreshCard(); render(); save();
+  });
+  qi.addEventListener('keydown',ev=>{if(ev.key==='Enter')document.getElementById('scan').focus()});
+  qi.focus(); qi.select();
+  refreshCard(); render(); save();
+}
+
+function bump(d){
+  const e=getEntry(activeId); if(!e)return;
+  e.qty=Math.max(0,(e.qty===null?0:e.qty)+d);
+  const q=document.getElementById('qtyIn'); if(q){q.value=e.qty;q.classList.remove('unset');}
+  refreshCard(); render(); save();
+}
+
+function refreshCard(){
+  const e=getEntry(activeId); if(!e)return;
+  const v=document.getElementById('cvView'); if(v)v.textContent=e.qty===null?'−':e.qty;
+  const t=document.getElementById('cvTot'); const tot=partTotal(e.part);
+  if(t)t.textContent=tot===null?'−':tot;
+  const d=document.getElementById('cvDiff');
+  if(d){
+    if(tot===null){d.textContent='—';d.className='';}
+    else{const diff=tot-sq(e.part);d.textContent=(diff>0?'+':'')+diff;d.className=diff>0?'over':diff<0?'under':'match';}
   }
-  tick();
 }
 
-function countFrame(){
-  fpsCounter++;
-  const now=performance.now();
-  if(now-fpsLast>1000){
-    fpsTag.textContent=fpsCounter+' fps';
-    fpsCounter=0; fpsLast=now;
+/* ---------- search ---------- */
+const searchEl=document.getElementById('search');
+searchEl.addEventListener('input',()=>{
+  const q=searchEl.value.trim().toLowerCase(), box=document.getElementById('results');
+  if(q.length<2){box.innerHTML='';return;}
+  const hits=searchIndex.filter(x=>x.low.includes(q)).slice(0,25);
+  box.innerHTML=hits.length?hits.map(x=>{
+    const tot=partTotal(x.p), es=partEntries(x.p);
+    let dtxt='';
+    if(tot!==null){const d=tot-sq(x.p);dtxt=`<span class="${d>0?'over':d<0?'under':'match'}">vahe ${(d>0?'+':'')+d}</span>`;}
+    const locs=es.length?es.map(e=>`${esc(e.loc||'—')}:${e.qty===null?'−':e.qty}`).join(', '):'';
+    return `<div class="res" onclick="pickPart('${esc(x.p)}')">
+      <div class="top"><span>${esc(x.n||'—')}</span><span class="c">${esc(x.p)}</span></div>
+      <div class="stats">
+        <span>peab olema: <b style="color:var(--text)">${sq(x.p)}</b></span>
+        <span>loetud: <b style="color:var(--text)">${tot===null?'<span class="unset">pole loetud</span>':tot}</b></span>
+        ${dtxt}${locs?`<span style="color:var(--blue)">${locs}</span>`:''}
+      </div></div>`;
+  }).join(''):'<div class="empty" style="padding:12px">Vasteid ei leitud</div>';
+});
+function pickPart(p){
+  const es=partEntries(p);
+  if(es.length) openEntry(es[es.length-1].id,null);
+  else handleScan(p,null);
+  searchEl.value=''; document.getElementById('results').innerHTML='';
+}
+
+/* ---------- table ---------- */
+function render(){
+  const wrap=document.getElementById('tblWrap'), sb=document.getElementById('sumbar');
+  const activeParts=activeStockParts();          // ainult laoseis > 0
+  const stockParts=activeParts.length;
+  const countedParts=new Set(entries.filter(e=>e.qty!==null).map(e=>e.part));
+  const doneActive=activeParts.filter(p=>countedParts.has(p)).length;
+  const remaining=Math.max(0,stockParts-doneActive);
+  const pending=entries.filter(e=>e.qty===null).length;
+
+  if(!entries.length){wrap.innerHTML='<div class="empty">Loetud artiklid ilmuvad siia.</div>';}
+  else{
+    let over=0,under=0,match=0,total=0;
+    const seen=new Set();
+    const sorted=[...entries].sort((a,b)=>a.part===b.part?a.id-b.id:(a.part<b.part?-1:1));
+    const rows=sorted.map(e=>{
+      const p=e.part, tot=partTotal(p), dup=partEntries(p).length>1;
+      if(e.qty!==null)total+=e.qty;
+      if(!seen.has(p)){seen.add(p);
+        if(tot!==null){const d=tot-sq(p);if(d>0)over++;else if(d<0)under++;else match++;}}
+      let dcell='<td class="n">—</td>';
+      if(tot!==null){const d=tot-sq(p);dcell=`<td class="n ${d>0?'over':d<0?'under':'match'}">${(d>0?'+':'')+d}</td>`;}
+      return `<tr>
+        <td class="code">${esc(p)}${dup?'<span class="badge dup">dup ×'+partEntries(p).length+'</span>':''}</td>
+        <td>${esc(names[p]||'—')}</td>
+        <td class="loc"><input type="text" value="${esc(e.loc||'')}" placeholder="asukoht" onchange="setEntryLoc(${e.id},this.value)"></td>
+        <td class="n"><button class="step sm" onclick="adj(${e.id},-1)">−</button>
+          <span style="display:inline-block;min-width:34px;text-align:center" class="${e.qty===null?'unset':''}">${e.qty===null?'−':e.qty}</span>
+          <button class="step sm" onclick="adj(${e.id},1)">+</button></td>
+        <td class="n">${sq(p)}${dup?`<span class="badge">Σ ${tot===null?'−':tot}</span>`:''}</td>
+        ${dcell}
+        <td><button class="del" onclick="delEntry(${e.id})">✕</button></td></tr>`;
+    }).join('');
+    wrap.innerHTML=`<table><thead><tr><th>Artikkel</th><th>Nimetus</th><th>Asukoht</th><th class="n">Loetud</th><th class="n">Laos</th><th class="n">Vahe</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    sb.innerHTML=`<span>Kirjeid: <b>${entries.length}</b></span>
+      <span>Artikleid loetud: <b>${countedParts.size}</b>${stockParts?' / '+stockParts:''}</span>
+      <span>Jäänud lugeda: <b style="color:var(--accent)">${stockParts?remaining:'?'}</b></span>
+      ${pending?`<span>Kogus sisestamata: <b class="under">${pending}</b></span>`:''}
+      <span>Kokku tk: <b>${total}</b></span>
+      <span>Klapib: <b class="match">${match}</b></span>
+      <span>Ülejääk: <b class="over">${over}</b></span>
+      <span>Puudujääk: <b class="under">${under}</b></span>`;
   }
+  const pct=stockParts?Math.round((doneActive/stockParts)*100):0;
+  document.getElementById('progBar').style.width=pct+'%';
+  if(!entries.length)sb.innerHTML=stockParts?`<span>Jäänud lugeda: <b style="color:var(--accent)">${stockParts}</b></span>`:'';
 }
-function updateStats(){
-  document.getElementById('statAttempts').textContent=stats.attempts;
-  document.getElementById('statHits').textContent=stats.hits;
-}
+function adj(id,d){const e=getEntry(id);if(!e)return;e.qty=Math.max(0,(e.qty===null?0:e.qty)+d);
+  if(activeId===id){const q=document.getElementById('qtyIn');if(q){q.value=e.qty;q.classList.remove('unset')}refreshCard()}render();save();}
+function setEntryLoc(id,v){const e=getEntry(id);if(!e)return;e.loc=v.trim();if(activeId===id)openEntry(id,null);else{render();save();}}
+function delEntry(id){entries=entries.filter(e=>e.id!==id);
+  if(activeId===id){activeId=null;document.getElementById('card').className='card'}render();save();}
 
-/* ---------- one-frame compare across all engines ---------- */
-document.getElementById('btnCompare').addEventListener('click', compareAll);
-async function compareAll(){
-  if(!video.videoWidth) return;
-  const canvas=document.createElement('canvas');
-  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(video,0,0);
-  const results=[];
-
-  // Native
-  if('BarcodeDetector' in window){
-    if(!nativeDetector) nativeDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']});
-    const t0=performance.now();
+/* ---------- autosave ---------- */
+let st=null;
+function save(){
+  clearTimeout(st);
+  st=setTimeout(()=>{
     try{
-      const bmp=await createImageBitmap(canvas);
-      const codes=await nativeDetector.detect(bmp);
-      results.push({eng:'Native',ok:codes&&codes.length>0,val:codes&&codes[0]?codes[0].rawValue:'—',ms:(performance.now()-t0).toFixed(1)});
-    }catch(e){ results.push({eng:'Native',ok:false,val:'viga',ms:'—'}); }
-  }else{ results.push({eng:'Native',ok:false,val:'pole toetatud',ms:'—'}); }
-
-  // ZXing
-  if(typeof ZXingBrowser!=='undefined'){
-    if(!zxingReader) zxingReader=new ZXingBrowser.BrowserMultiFormatReader();
-    const t0=performance.now();
-    try{
-      const res=await zxingReader.decodeFromCanvas(canvas);
-      results.push({eng:'ZXing',ok:!!res,val:res?res.getText():'—',ms:(performance.now()-t0).toFixed(1)});
-    }catch(e){ results.push({eng:'ZXing',ok:false,val:'ei leitud',ms:(performance.now()-t0).toFixed(1)}); }
-  }else{ results.push({eng:'ZXing',ok:false,val:'pole laetud',ms:'—'}); }
-
-  // ZBar
-  if(typeof zbarWasm!=='undefined'){
-    const t0=performance.now();
-    try{
-      const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      const symbols=await zbarWasm.scanImageData(imgData);
-      results.push({eng:'ZBar',ok:symbols&&symbols.length>0,val:symbols&&symbols[0]?symbols[0].decode():'—',ms:(performance.now()-t0).toFixed(1)});
-    }catch(e){ results.push({eng:'ZBar',ok:false,val:'viga',ms:(performance.now()-t0).toFixed(1)}); }
-  }else{ results.push({eng:'ZBar',ok:false,val:'pole laetud',ms:'—'}); }
-
-  renderCompare(results);
-  results.forEach(r=>{ if(r.ok) logLine(r.eng.toLowerCase(), r.val, r.ms); });
+      localStorage.setItem(LS_KEY,JSON.stringify({tech:document.getElementById('tech').value,
+        date:document.getElementById('sdate').value,names,stock,eanMap,entries,curLoc,seq,ts:Date.now()}));
+      document.getElementById('saveInd').textContent='salvestatud '+new Date().toTimeString().slice(0,8);
+    }catch(e){document.getElementById('saveInd').textContent='⚠ automaatsalvestus ei tööta'}
+  },400);
 }
-function renderCompare(results){
-  const box=document.getElementById('cmpResult');
-  box.innerHTML = `<table class="cmptable"><thead><tr><th>Mootor</th><th>Tulemus</th><th>Kestus</th></tr></thead>
-    <tbody>${results.map(r=>`<tr><td>${esc(r.eng)}</td><td class="${r.ok?'ok':'fail'}">${esc(r.val)}</td><td>${r.ms}ms</td></tr>`).join('')}</tbody></table>`;
+function restore(){
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw)return;
+    const s=JSON.parse(raw);
+    names=s.names||{};stock=s.stock||{};eanMap=s.eanMap||{};entries=s.entries||[];
+    curLoc=s.curLoc||'';seq=s.seq||(entries.reduce((a,e)=>Math.max(a,e.id),0)+1);
+    document.getElementById('tech').value=s.tech||'';document.getElementById('sdate').value=s.date||'';
+    if(curLoc)document.getElementById('curLoc').textContent=curLoc;
+    if(Object.keys(names).length){document.getElementById('dropPrice').classList.add('loaded');
+      document.getElementById('stPrice').textContent=`taastatud: ${Object.keys(names).length} nimetust, ${Object.keys(eanMap).length} EAN`}
+    if(Object.keys(stock).length){document.getElementById('dropStock').classList.add('loaded');
+      document.getElementById('stStock').textContent=`taastatud: ${Object.keys(stock).length} artiklit`}
+    rebuildIndex();render();
+    document.getElementById('saveInd').textContent='taastatud eelmine seanss';
+  }catch(e){}
 }
+['tech','sdate'].forEach(id=>document.getElementById(id).addEventListener('input',save));
 
-function logLine(eng,val,ms){
-  const box=document.getElementById('logBox');
-  if(box.querySelector('.empty')) box.innerHTML='';
-  const row=document.createElement('div');
-  row.className='row';
-  const time=new Date().toTimeString().slice(0,8);
-  row.innerHTML=`<span class="eng">${esc(eng)}</span><span class="val">${esc(val)}</span><span class="t">${ms}ms · ${time}</span>`;
-  box.insertBefore(row, box.firstChild);
-  if(navigator.vibrate) navigator.vibrate(40);
-}
-function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* ---------- export (duplicates summed, Loetud moved forward) ---------- */
+document.getElementById('btnCsv').addEventListener('click',()=>{
+  // ainult artiklid, mille loetud kogus on > 0
+  const parts=[...new Set(entries.map(e=>e.part))]
+    .filter(p=>{const t=partTotal(p); return t!==null && t>0;}).sort();
+  let csv='Artikkel;Nimetus;Loetud;Laoseis;Vahe;Asukohad\n';
+  parts.forEach(p=>{
+    const tot=partTotal(p);
+    const locs=partEntries(p).filter(e=>e.qty!==null&&e.qty>0)
+      .map(e=>`${e.loc||'—'}:${e.qty}`).join(' | ');
+    csv+=`${p};${(names[p]||'').replace(/;/g,',')};${tot};${sq(p)};${tot-sq(p)};${locs}\n`;
+  });
+  if(!parts.length){alert('Eksportimiseks pole ühtegi artiklit, mille loetud kogus oleks üle nulli.');return;}
+  dl(`inventuur_${(document.getElementById('tech').value||'tehnik').replace(/\s+/g,'_')}.csv`,'\uFEFF'+csv,'text/csv;charset=utf-8');
+});
+document.getElementById('btnJson').addEventListener('click',()=>dl('inventuur_varukoopia.json',localStorage.getItem(LS_KEY)||'{}','application/json'));
+document.getElementById('btnLoad').addEventListener('click',()=>document.getElementById('fileJson').click());
+document.getElementById('fileJson').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;const fr=new FileReader();
+  fr.onload=ev=>{try{localStorage.setItem(LS_KEY,ev.target.result);location.reload()}catch(x){alert('Varukoopiat ei õnnestunud laadida')}};
+  fr.readAsText(f,'UTF-8');
+});
+document.getElementById('btnClear').addEventListener('click',()=>{
+  if(confirm('Kustutada kõik loetud kirjed? Hinnakiri ja laoseis jäävad alles.')){
+    entries=[];activeId=null;document.getElementById('card').className='card';render();save();}
+});
+function dl(n,c,m){const a=document.createElement('a');const u=URL.createObjectURL(new Blob([c],{type:m}));
+  a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+restore(); render();
 </script>
 </body>
 </html>
