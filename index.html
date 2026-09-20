@@ -200,7 +200,7 @@ td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
     <div class="msg" id="camMsg">Käivitan kaamera…</div>
     <button class="camClose" id="camClose">✕</button>
   </div>
-  <div class="camBottom"><div class="hint">Suuna kaamera otse triipkoodile, hoia telefon paigal</div></div>
+  <div class="camBottom"><div class="hint">Puuduta ekraani koodi kohal, kui fookus hägune · hoia telefon paigal</div></div>
 </div>
 
 <script>
@@ -334,7 +334,10 @@ async function openCamera(){
   const modal=document.getElementById('camModal'), msg=document.getElementById('camMsg');
   modal.classList.add('show'); msg.textContent='Käivitan kaamera…';
   try{
-    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}}});
+    camStream = await navigator.mediaDevices.getUserMedia({video:{
+      facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720},
+      advanced:[{focusMode:'continuous'},{exposureMode:'continuous'},{whiteBalanceMode:'continuous'}]
+    }});
   }catch(err){
     msg.textContent = 'Kaamerale ligipääs ebaõnnestus: '+err.message;
     return;
@@ -342,6 +345,7 @@ async function openCamera(){
   const video=document.getElementById('camVideo');
   video.srcObject=camStream;
   try{ await video.play(); }catch(e){}
+  await forceContinuousAF();
   if(!camDetector){
     try{ camDetector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']}); }
     catch(e){ msg.textContent='Kaamera triipkoodilugemine pole selles brauseris toetatud.'; return; }
@@ -349,6 +353,49 @@ async function openCamera(){
   msg.textContent='Suuna kaamera triipkoodile…';
   camActive=true;
   detectLoop();
+}
+
+// sunni sisse pidev autofookus (enamik "ei fokuseeri" probleeme tuleb sellest,
+// et brauser jätab kaamera vaikimisi üksik-fookuse režiimi)
+async function forceContinuousAF(){
+  try{
+    const track = camStream.getVideoTracks()[0];
+    if(!track || !track.getCapabilities) return;
+    const caps = track.getCapabilities();
+    const advanced = [];
+    if(caps.focusMode && caps.focusMode.includes('continuous')) advanced.push({focusMode:'continuous'});
+    if(caps.exposureMode && caps.exposureMode.includes('continuous')) advanced.push({exposureMode:'continuous'});
+    if(caps.whiteBalanceMode && caps.whiteBalanceMode.includes('continuous')) advanced.push({whiteBalanceMode:'continuous'});
+    if(advanced.length) await track.applyConstraints({advanced});
+  }catch(e){ /* seade ei toeta — jätkame vaikeseadistusega */ }
+}
+
+// puuduta ekraanil kohta, kuhu tahad fookust suunata (kui riistvara toetab)
+document.getElementById('camVideo').addEventListener('click', async (e)=>{
+  showFocusRing(e.clientX, e.clientY);
+  try{
+    const track = camStream && camStream.getVideoTracks()[0];
+    if(!track || !track.getCapabilities) return;
+    const caps = track.getCapabilities();
+    if(!caps.pointsOfInterest) return;
+    const rect = e.target.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}]}]});
+    if(caps.focusMode && caps.focusMode.includes('single-shot')){
+      await track.applyConstraints({advanced:[{focusMode:'single-shot'}]});
+      setTimeout(()=>{ track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{}); }, 1200);
+    }
+  }catch(e){ /* riistvara ei toeta punktifookust — visuaalne ring jääb ikkagi */ }
+});
+function showFocusRing(x,y){
+  const ring = document.createElement('div');
+  ring.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:64px;height:64px;margin:-32px 0 0 -32px;
+    border:2px solid var(--accent);border-radius:50%;z-index:60;pointer-events:none;transition:opacity .5s,transform .3s;`;
+  document.body.appendChild(ring);
+  requestAnimationFrame(()=>{ ring.style.transform='scale(0.8)'; });
+  setTimeout(()=>{ ring.style.opacity='0'; }, 500);
+  setTimeout(()=>ring.remove(), 1000);
 }
 
 async function detectLoop(){
