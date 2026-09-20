@@ -7,8 +7,8 @@
 <title>Inventuur</title>
 <style>
 :root{
-  --bg:#16181A; --panel:#1F2225; --panel2:#272B2F; --line:#343A40;
-  --text:#E8E6E3; --dim:#8E9499; --accent:#E0A33E; --ok:#6FA36F; --warn:#C25E4F; --blue:#5E8CA8;
+  --bg:#F6F7F8; --panel:#FFFFFF; --panel2:#EEF3F7; --line:#D8DEE6;
+  --text:#253044; --dim:#667085; --accent:#103D82; --ok:#4F7212; --warn:#C65D00; --blue:#00A6FF;
   --mono:'SF Mono',Consolas,Menlo,monospace;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -119,44 +119,17 @@ td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
 .del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px}
 .del:hover{color:var(--warn)}
 
-/* v4 responsive application shell, palette based on supplied design colors */
-:root{--bg:#F6F7F8;--panel:#FFFFFF;--panel2:#EFF0F1;--line:#E4E6E8;--text:#2F3237;--dim:#6C737F;--accent:#103D82;--accent2:#00A6FF;--ok:#4F7212;--okbg:#E4EFD2;--warn:#9A6A00;--warnbg:#FFF6BF;--yellow:#FFD300;--mono:'SF Mono',Consolas,Menlo,monospace}
-body{background:var(--bg);color:var(--text);padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}.wrap{max-width:1100px;margin:auto;padding:14px}.appHeader{position:sticky;top:0;z-index:15;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}.appTitle{font-size:22px;font-weight:800}.save-ind{color:var(--dim);font-size:11px}.page{display:none}.page.active{display:block}.pageTitle{font-size:20px;margin:0 0 12px}.panel,.scanbox,.locbar{background:#fff;border-color:var(--line);box-shadow:0 1px 2px #0000000a}input[type=text],input[type=number]{background:#fff;color:var(--text);border-color:#C8CBD0}.scanbox{border-color:var(--accent)}button{background:var(--accent);border-color:var(--accent)}button.sec{background:#fff;color:var(--text);border-color:#C8CBD0}.bottomNav{position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1100px);display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:15px 15px 0 0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -5px 20px #22304622}.navBtn{border:0;border-radius:0;background:#fff;color:var(--dim);min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:700}.navBtn.active{background:var(--accent);color:#fff}.navBtn .ico{font-size:20px}.readHero{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px}.readLabel{font-size:11px;color:var(--dim);text-transform:uppercase}.readCount{font-size:30px;font-weight:800}.readList{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.invCard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:13px;border-bottom:1px solid var(--line)}.invCard:last-child{border:0}.itemCode{font:12px var(--mono);color:var(--dim)}.itemName{font-size:15px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}.itemPrice{font-size:13px;color:var(--dim);margin-top:3px}.itemNums{text-align:right;min-width:105px}.qty{font-weight:800}.stockTxt{font-size:11px;color:var(--dim);margin-top:3px}.pill{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:999px;font-weight:800;font-size:12px}.pill.match{background:var(--okbg);color:var(--ok)}.pill.over{background:#FFF6BF;color:#725000}.pill.under{background:var(--warnbg);color:#991F00}.rowActions{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px}.locTxt{font-size:11px;color:var(--dim)}.mini{display:flex;gap:5px}.mini button{padding:6px 9px;min-width:34px}.emptyState{padding:28px;text-align:center;color:var(--dim)}.searchRow{display:grid;grid-template-columns:1fr auto;gap:8px}.searchCam{min-width:48px;font-size:19px}.exportStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.diffStat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}.diffStat.neg{border-left:5px solid var(--warn)}.diffStat.pos{border-left:5px solid #77AD1C}.diffStat .title{font-size:11px;color:var(--dim)}.diffStat .main{font-size:22px;font-weight:800;margin:4px 0}.diffStat.neg .main{color:var(--warn)}.diffStat.pos .main{color:var(--ok)}.diffStat .sum{font-size:12px}.actions.stack{display:grid;gap:9px}.actions.stack button{width:100%;padding:12px}.advanced{margin-top:12px}.advanced summary{color:var(--dim);cursor:pointer}.camControls{position:absolute;left:12px;right:12px;bottom:18px;z-index:3;background:#000b;padding:10px;border-radius:9px;color:#fff}.camActions{display:flex;gap:7px;flex-wrap:wrap}.camActions button{padding:8px}.focusRow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px}.focusRow input{width:100%}.camCtlTitle{font-size:12px;font-weight:800;margin-bottom:8px}.camModeRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.camCtlBtn{padding:9px 6px;background:#ffffff24;border:1px solid #ffffff55;color:#fff}.camCtlBtn.active{background:var(--accent2);border-color:var(--accent2);color:#062244}.camControlGroup{margin-top:10px}.camCtlLabel{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}.camControlGroup input{width:100%;accent-color:var(--accent2)}.stepLabels{display:grid;grid-template-columns:repeat(4,1fr);font-size:9px;color:#ddd}.stepLabels span:last-child{text-align:right}.stepLabels.three{grid-template-columns:repeat(3,1fr)}.stepLabels.three span:nth-child(2){text-align:center}.camTech{font-size:9px;color:#bbb;margin-top:8px;line-height:1.35}
-@media(max-width:700px){.wrap{padding:11px 9px}.invCard{padding:12px 10px;gap:7px 9px}.itemNums{min-width:95px}.exportStats{grid-template-columns:1fr}.drops{grid-template-columns:1fr}.bottomNav{border-radius:14px 14px 0 0}}
+/* v6 application layout */
+body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:1080px;padding:12px}.appHeader{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}.appTitle{font-size:22px;font-weight:800}.appPage{display:none}.appPage.active{display:block}.panel,.scanbox,.locbar{background:#fff;border-color:var(--line);box-shadow:0 1px 3px #103D8210}input[type=text],input[type=number]{background:#fff;color:var(--text);border-color:#BAC4D0}button{background:#00A6FF!important;border-color:#00A6FF!important;color:#fff!important}button.sec{background:#fff!important;color:#103D82!important;border-color:#00A6FF!important}.bottomNav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:40;width:min(100%,1080px);display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:15px 15px 0 0;overflow:hidden;box-shadow:0 -5px 18px #103D8222}.navBtn{border:0!important;border-radius:0!important;background:#fff!important;color:#103D82!important;min-height:66px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;font-weight:700}.navBtn.active{background:#103D82!important;color:#fff!important}.readHero{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px}.readCount{font-size:30px;font-weight:800}.readLabel{font-size:11px;color:var(--dim);text-transform:uppercase}.readList{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.invCard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:13px;border-bottom:1px solid var(--line)}.itemCode{font:12px var(--mono);color:var(--dim)}.itemName{font-weight:700;overflow-wrap:anywhere}.itemPrice{font-size:13px;color:var(--dim);margin-top:3px}.itemNums{text-align:right;min-width:105px}.pill{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:999px;font-size:12px;font-weight:800}.pill.match{background:#E4EFD2;color:#38550A}.pill.over{background:#E4EFD2;color:#38550A}.pill.under{background:#FFE3E0;color:#B42318}.pill.pending{background:#FFF7D6;color:#FAC916}.rowActions{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}.mini{display:flex;gap:5px}.mini button{padding:6px 9px}.scanLaunch{display:grid;gap:8px}.primaryScan{font-size:16px;font-weight:800;padding:14px}.barcodeIcon{font-family:var(--mono);font-size:20px;font-weight:900;letter-spacing:-3px;margin-right:8px}.manualEntry{display:none;grid-template-columns:1fr auto;gap:8px}.manualEntry.show{display:grid}.linkBtn{background:transparent!important;border:0!important;color:#103D82!important;text-decoration:underline}.scanCompact .panel,.scanCompact .scanbox,.scanCompact .locbar{margin-bottom:8px;padding:10px}.exportStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.diffStat{background:#fff;border-radius:10px;padding:14px;border:1px solid var(--line)}.diffStat.neg{background:#FFE3E0}.diffStat.pos{background:#E4EFD2}.diffStat .main{font-size:22px;font-weight:800}.camControls{position:absolute;left:10px;right:10px;bottom:12px;z-index:4;background:#000c;padding:10px;border-radius:10px;color:#fff}.camModeRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.camCtlBtn.active{background:#00A6FF!important;color:#fff!important}.camGroup{margin-top:9px}.camGroup input{width:100%;accent-color:#00A6FF}.camLabel{display:flex;justify-content:space-between;font-size:11px}.steps{display:grid;grid-template-columns:repeat(4,1fr);font-size:9px}.steps.three{grid-template-columns:repeat(3,1fr)}.steps span:last-child{text-align:right}.advanced{margin-top:8px}.emptyState{padding:25px;text-align:center;color:var(--dim)}
+@media(max-width:700px){.wrap{padding:9px}.drops{grid-template-columns:1fr}.exportStats{grid-template-columns:1fr}.invCard{padding:11px 9px}.scanCompact h2{margin:0 0 7px}}
 </style>
 </head>
-<body>
-<header class="appHeader"><div class="appTitle">Inventuur</div><div class="save-ind" id="saveInd">—</div></header>
-<div class="wrap">
-<section class="page active" id="page-reading"><div class="readHero"><div class="readLabel">Artikleid loetud</div><div class="readCount" id="readCount">0 / 0</div></div><div class="progress"><span id="progBar" style="width:0%"></span></div><div id="sumbar" hidden></div><div class="readList" id="tblWrap"><div class="emptyState">Loetud artiklid ilmuvad siia.</div></div></section>
-<section class="page" id="page-scan"><h2 class="pageTitle">Skaneeri</h2>
-<div class="locbar"><div><div class="lbl">Praegune asukoht</div><div class="cur" id="curLoc">— määramata —</div></div><input type="text" id="locInput" placeholder="nt Riiul 2, Sahtel A"><button id="btnSetLoc">Määra</button></div>
-<div class="scanbox"><div class="scanrow"><input type="text" id="scan" placeholder="Skanni või sisesta artikkel / EAN" autocomplete="off"><button class="camBtn" id="btnCam" title="Skanni kaameraga">📷</button></div><div class="hint">BT HID-skanner töötab klaviatuurina. Lugematu koodi saab sisestada käsitsi.</div><div class="card" id="card"></div></div>
-<div class="panel"><h2>Otsi / kontrolli artiklit</h2><div class="searchRow"><input type="text" id="search" placeholder="Otsi artikli või kirjelduse järgi" autocomplete="off"><button id="btnSearchCam" class="searchCam" title="Loe otsingusse kaameraga">📷</button></div><div class="hint">Väli toetab käsitsi sisestamist ja BT HID-skannerit.</div><div class="results" id="results"></div></div>
-<details class="advanced"><summary>Seadistus ja andmefailid</summary><div class="panel"><h2>Inventuuri info</h2><div style="display:flex;gap:10px;flex-wrap:wrap"><input type="text" id="tech" placeholder="Tehniku nimi"><input type="text" id="sdate" placeholder="Kuupäev"></div></div><div class="panel"><h2>Andmefailid</h2><div class="drops"><div class="drop" id="dropPrice"><div class="t">Hinnakiri</div><div class="d">Artikkel · nimetus · hind · EAN</div><div class="st" id="stPrice"></div></div><div class="drop" id="dropStock"><div class="t">Laoseis</div><div class="d">Artikkel · kogus</div><div class="st" id="stStock"></div></div></div><input type="file" id="filePrice" accept=".csv,.txt,.tsv" hidden><input type="file" id="fileStock" accept=".csv,.txt,.tsv" hidden></div></details></section>
-<section class="page" id="page-export"><h2 class="pageTitle">Eksport</h2><div class="exportStats"><div class="diffStat neg"><div class="title">Puudujääk</div><div class="main" id="negQty">0 tk</div><div class="sum" id="negSum">0,00 €</div></div><div class="diffStat pos"><div class="title">Ülejääk</div><div class="main" id="posQty">0 tk</div><div class="sum" id="posSum">0,00 €</div></div></div><div class="panel"><div class="actions stack"><button id="btnCsv">Ekspordi CSV</button><button class="sec" id="btnJson">Salvesta varukoopia (.json)</button><button class="sec" id="btnLoad">Laadi varukoopia</button><button class="sec" id="btnClear">Tühjenda loetud</button><input type="file" id="fileJson" accept=".json" hidden></div></div></section>
-</div>
-<nav class="bottomNav"><button class="navBtn active" data-page="reading"><span class="ico">☷</span>Lugemine</button><button class="navBtn" data-page="scan"><span class="ico">▣</span>Skaneeri</button><button class="navBtn" data-page="export"><span class="ico">⇧</span>Eksport</button></nav>
-<div class="camModal" id="camModal"><video id="camVideo" playsinline muted autoplay></video><div class="camFrame"></div><div class="camTop"><div class="msg" id="camMsg">Käivitan kaamera…</div><button class="camClose" id="camClose">✕</button></div><div class="camControls" id="camControls">
-  <div class="camCtlTitle">Kaamera juhtimine</div>
-  <div class="camModeRow">
-    <button type="button" id="btnAutoFocus" class="camCtlBtn">Autofookus</button>
-    <button type="button" id="btnManualFocus" class="camCtlBtn">Käsifookus</button>
-    <button type="button" id="btnTorch" class="camCtlBtn" style="display:none">Taskulamp</button>
-  </div>
-  <div class="camControlGroup" id="manualFocusGroup" hidden>
-    <div class="camCtlLabel"><span>Käsifookus</span><span id="focusVal">—</span></div>
-    <input id="focusSlider" type="range" min="0" max="3" step="1" value="1">
-    <div class="stepLabels"><span>Lähedal</span><span></span><span></span><span>Kaugel</span></div>
-  </div>
-  <div class="camControlGroup" id="zoomGroup" hidden>
-    <div class="camCtlLabel"><span>Suum</span><span id="zoomVal">1×</span></div>
-    <input id="zoomSlider" type="range" min="0" max="2" step="1" value="0">
-    <div class="stepLabels three"><span>1×</span><span>1,5×</span><span>3×</span></div>
-  </div>
-  <div class="camTech" id="camTech"></div>
-</div></div>
-<script>
+<body><header class="appHeader"><div class="appTitle">Inventuur</div><div class="save-ind" id="saveInd">—</div></header><div class="wrap">
+<section class="appPage active" id="page-reading"><div class="readHero"><div class="readLabel">Artikleid loetud</div><div class="readCount" id="readCount">0 / 0</div></div><div class="progress"><span id="progBar"></span></div><div id="sumbar" hidden></div><div class="readList" id="tblWrap"><div class="emptyState">Loetud artiklid ilmuvad siia.</div></div></section>
+<section class="appPage scanCompact" id="page-scan"><h2>Skaneeri</h2><div class="locbar"><div><div class="lbl">Asukoht</div><div class="cur" id="curLoc">— määramata —</div></div><input id="locInput" type="text" placeholder="nt Riiul 2"><button id="btnSetLoc">Määra</button></div><div class="scanbox"><div class="scanLaunch"><button id="btnCam" class="primaryScan"><span class="barcodeIcon">▥▥▥</span> Ava triipkoodilugeja</button><button id="btnManualEntry" class="linkBtn">Kood ei loe? Sisesta käsitsi</button><div class="manualEntry" id="manualEntry"><input id="scan" type="text" inputmode="numeric" autocomplete="off" placeholder="Artikkel või EAN"><button id="btnManualSubmit">Lisa</button></div></div><div class="card" id="card"></div><div class="hint" id="wakeStatus">Ekraan hoitakse inventuuri ajal aktiivsena</div></div><details class="advanced"><summary>Otsi / kontrolli artiklit</summary><div class="panel"><div class="scanrow"><input id="search" type="text" autocomplete="off" placeholder="Otsi artiklit"><button id="btnSearchCam"><span class="barcodeIcon">▥</span></button></div><div class="results" id="results"></div></div></details><details class="advanced"><summary>Seadistus ja andmefailid</summary><div class="panel"><input id="tech" type="text" placeholder="Tehniku nimi"><input id="sdate" type="text" placeholder="Kuupäev"></div><div class="panel"><div class="drops"><div class="drop" id="dropPrice"><div class="t">Hinnakiri</div><div class="d">Artikkel · nimetus · hind · EAN</div><div class="st" id="stPrice"></div></div><div class="drop" id="dropStock"><div class="t">Laoseis</div><div class="d">Artikkel · kogus</div><div class="st" id="stStock"></div></div></div><input id="filePrice" type="file" hidden><input id="fileStock" type="file" hidden></div></details></section>
+<section class="appPage" id="page-export"><h2>Eksport</h2><div class="exportStats"><div class="diffStat neg"><div>Puudujääk</div><div class="main" id="negQty">0 tk</div><div id="negSum">0,00 €</div></div><div class="diffStat pos"><div>Ülejääk</div><div class="main" id="posQty">0 tk</div><div id="posSum">0,00 €</div></div></div><div class="panel actions"><button id="btnCsv">Ekspordi CSV</button><button class="sec" id="btnJson">Salvesta varukoopia</button><button class="sec" id="btnLoad">Laadi varukoopia</button><button class="sec" id="btnClear">Tühjenda loetud</button><input id="fileJson" type="file" hidden></div></section></div>
+<nav class="bottomNav"><button class="navBtn active" data-page="reading">☷<span>Lugemine</span></button><button class="navBtn" data-page="scan">▥<span>Skaneeri</span></button><button class="navBtn" data-page="export">⇧<span>Eksport</span></button></nav>
+<div class="camModal" id="camModal"><video id="camVideo" playsinline muted autoplay></video><div class="camFrame"></div><div class="camTop"><div class="msg" id="camMsg">Käivitan kaamera…</div><button class="camClose" id="camClose">✕</button></div><div class="camControls"><div class="camModeRow"><button id="btnAutoFocus">Autofookus</button><button id="btnManualFocus">Käsifookus</button><button id="btnTorch" style="display:none">Taskulamp</button></div><div class="camGroup" id="manualFocusGroup" hidden><div class="camLabel"><span>Käsifookus</span><span id="focusVal">—</span></div><input id="focusSlider" type="range" min="0" max="3" step="1" value="1"><div class="steps"><span>Lähedal</span><span></span><span></span><span>Kaugel</span></div></div><div class="camGroup" id="zoomGroup" hidden><div class="camLabel"><span>Suum</span><span id="zoomVal">1×</span></div><input id="zoomSlider" type="range" min="0" max="2" step="1" value="0"><div class="steps three"><span>1×</span><span>1,5×</span><span>3×</span></div></div><div id="camTech"></div></div></div><script>
 'use strict';
 const LS_KEY='inventuur_v2';
 
@@ -205,7 +178,7 @@ setupDrop('dropPrice','filePrice',(file,zone)=>{
       let ean=0,sci=0;
       for(let i=1;i<rows.length;i++){
         const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
-        const nm=cN>=0?(r[cN]||'').trim():''; if(nm)names[p]=nm; if(cPr>=0&&r[cPr]!==undefined&&r[cPr]!=='')prices[p]=num(r[cPr]);
+        const nm=cN>=0?(r[cN]||'').trim():''; if(nm)names[p]=nm; if(cPr>=0&&r[cPr]!=='')prices[p]=num(r[cPr]);
         if(cB>=0){const b=(r[cB]||'').trim();
           if(b&&/^\d{6,14}$/.test(b)){if(!eanMap[b]){eanMap[b]=p;ean++}}
           else if(b&&/E\+/i.test(b))sci++;}
@@ -227,7 +200,6 @@ setupDrop('dropStock','fileStock',(file,zone)=>{
       for(let i=1;i<rows.length;i++){
         const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
         stock[p]=cQ>=0?num(r[cQ]):0;
-        /* Nimetust ei võeta laoseisu failist. */
         n++;
       }
       rebuildIndex(); zone.classList.add('loaded');
@@ -275,114 +247,18 @@ scanEl.focus();
 document.addEventListener('click',e=>{if(!e.target.closest('input,button,.res,.drop'))setTimeout(()=>scanEl.focus(),40)});
 function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
 
-/* ---------- camera scanning (phone) ---------- */
-let camStream=null, camDetector=null, camActive=false, camTrack=null;
-let camCaps={}, torchOn=false, camTarget='scan', focusTimer=null;
-const camSupported='BarcodeDetector' in window && !!navigator.mediaDevices;
-document.getElementById('btnCam').style.display=camSupported?'':'none';
-document.getElementById('btnCam').addEventListener('click',()=>{camTarget='scan';openCamera()});
-document.getElementById('btnSearchCam').addEventListener('click',()=>{camTarget='search';openCamera()});
-document.getElementById('camClose').addEventListener('click',closeCamera);
-document.getElementById('btnAutoFocus').addEventListener('click',setAutoFocus);
-document.getElementById('btnManualFocus').addEventListener('click',enableManualFocus);
-document.getElementById('btnTorch').addEventListener('click',toggleTorch);
-document.getElementById('focusSlider').addEventListener('input',e=>{
-  const step=Number(e.target.value); clearTimeout(focusTimer);
-  focusTimer=setTimeout(()=>setManualFocusStep(step),60);
-});
-document.getElementById('zoomSlider').addEventListener('input',e=>setZoomStep(Number(e.target.value)));
-
-async function openCamera(){
-  const modal=document.getElementById('camModal'),msg=document.getElementById('camMsg');
-  modal.classList.add('show');msg.textContent='Käivitan kaamera…';resetCameraControls();
-  try{
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});
-  }catch(err){msg.textContent='Kaamerale ligipääs ebaõnnestus: '+err.message;return}
-  const video=document.getElementById('camVideo');
-  video.srcObject=camStream;
-  try{await video.play()}catch(e){}
-  camTrack=camStream.getVideoTracks()[0]||null;
-  await configureCameraControls();
-  if(!camDetector){
-    try{camDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']})}
-    catch(e){msg.textContent='Kaamera triipkoodilugemine pole selles brauseris toetatud.';return}
-  }
-  msg.textContent='Suuna kaamera triipkoodile…';camActive=true;detectLoop();
-}
-async function configureCameraControls(){
-  const tech=document.getElementById('camTech');
-  if(!camTrack||typeof camTrack.getCapabilities!=='function'){tech.textContent='Brauser ei avalda kaamera lisajuhtimist.';return}
-  try{camCaps=camTrack.getCapabilities()||{}}catch(e){camCaps={}}
-  const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
-  if(modes.includes('continuous')){
-    try{await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch(e){tech.textContent='Autofookuse rakendamine ebaõnnestus.'}
-  }
-  document.getElementById('btnAutoFocus').disabled=!modes.includes('continuous');
-  document.getElementById('btnManualFocus').disabled=!(modes.includes('manual')&&camCaps.focusDistance);
-  document.getElementById('manualFocusGroup').hidden=true;
-  const torch=document.getElementById('btnTorch');torch.style.display=camCaps.torch?'':'none';
-  const zoom=camCaps.zoom;document.getElementById('zoomGroup').hidden=!(zoom&&Number.isFinite(zoom.min)&&Number.isFinite(zoom.max)&&zoom.max>zoom.min);
-  const label=camTrack.label||'tagakaamera';tech.textContent=label+' | fookus: '+(modes.join(', ')||'ei avaldata')+(zoom?` | suum ${zoom.min}…${zoom.max}`:'');
-  updateCameraButtons();
-}
-function updateCameraButtons(){
-  let mode='';try{mode=camTrack?.getSettings?.().focusMode||''}catch(e){}
-  document.getElementById('btnAutoFocus').classList.toggle('active',mode==='continuous');
-  document.getElementById('btnManualFocus').classList.toggle('active',mode==='manual');
-  document.getElementById('btnTorch').classList.toggle('active',torchOn);
-}
-async function setAutoFocus(){
-  if(!camTrack)return;const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];
-  if(!modes.includes('continuous')){document.getElementById('camMsg').textContent='Pidev autofookus pole saadaval.';return}
-  try{await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]});document.getElementById('manualFocusGroup').hidden=true;document.getElementById('camMsg').textContent='Autofookus aktiivne';updateCameraButtons()}
-  catch(e){document.getElementById('camMsg').textContent='Autofookuse käivitamine ebaõnnestus.'}
-}
-async function enableManualFocus(){
-  if(!camTrack||!camCaps.focusDistance)return;
-  document.getElementById('manualFocusGroup').hidden=false;
-  await setManualFocusStep(Number(document.getElementById('focusSlider').value));
-}
-function focusValueForStep(step){const fd=camCaps.focusDistance;return fd.min+(fd.max-fd.min)*(step/3)}
-async function setManualFocusStep(step){
-  if(!camTrack||!camCaps.focusDistance)return;const modes=Array.isArray(camCaps.focusMode)?camCaps.focusMode:[];if(!modes.includes('manual'))return;
-  const value=focusValueForStep(step);document.getElementById('focusVal').textContent=(step+1)+'/4';
-  try{await camTrack.applyConstraints({advanced:[{focusMode:'manual',focusDistance:value}]});document.getElementById('camMsg').textContent='Käsifookus '+(step+1)+'/4';updateCameraButtons()}
-  catch(e){document.getElementById('camMsg').textContent='Käsifookust ei õnnestunud rakendada.'}
-}
-function zoomValueForStep(step){
-  const z=camCaps.zoom,targets=[1,1.5,3],target=targets[step];return Math.min(z.max,Math.max(z.min,target));
-}
-async function setZoomStep(step){
-  if(!camTrack||!camCaps.zoom)return;const value=zoomValueForStep(step);document.getElementById('zoomVal').textContent=String(value).replace('.',',')+'×';
-  try{await camTrack.applyConstraints({advanced:[{zoom:value}]})}catch(e){document.getElementById('camMsg').textContent='Suumi ei õnnestunud rakendada.'}
-}
-async function toggleTorch(){
-  if(!camTrack||!camCaps.torch)return;torchOn=!torchOn;
-  try{await camTrack.applyConstraints({advanced:[{torch:torchOn}]});document.getElementById('btnTorch').textContent=torchOn?'Taskulamp sees':'Taskulamp';updateCameraButtons()}
-  catch(e){torchOn=!torchOn;document.getElementById('camMsg').textContent='Taskulambi juhtimine ebaõnnestus.'}
-}
-function resetCameraControls(){
-  camCaps={};camTrack=null;torchOn=false;clearTimeout(focusTimer);
-  document.getElementById('manualFocusGroup').hidden=true;document.getElementById('zoomGroup').hidden=true;
-  document.getElementById('focusSlider').value=1;document.getElementById('focusVal').textContent='—';
-  document.getElementById('zoomSlider').value=0;document.getElementById('zoomVal').textContent='1×';
-  document.getElementById('btnTorch').textContent='Taskulamp';document.querySelectorAll('.camCtlBtn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('camTech').textContent='';
-}
-async function detectLoop(){
-  if(!camActive)return;const video=document.getElementById('camVideo');
-  try{if(video.readyState>=2){const codes=await camDetector.detect(video);if(codes&&codes.length){onCameraDetect(codes[0].rawValue);return}}}catch(err){}
-  if(camActive)requestAnimationFrame(detectLoop);
-}
-function onCameraDetect(val){
-  camActive=false;if(navigator.vibrate)navigator.vibrate(70);document.getElementById('camMsg').textContent='✓ '+val;closeCamera();
-  if(camTarget==='search'){const q=document.getElementById('search');q.value=val;q.dispatchEvent(new Event('input'));camTarget='scan'}else handleScan(resolve(val),val);
-}
-function closeCamera(){
-  camActive=false;clearTimeout(focusTimer);if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}camTrack=null;camCaps={};torchOn=false;
-  document.getElementById('camVideo').srcObject=null;document.getElementById('camModal').classList.remove('show');
-}
-
+/* ---------- camera scanning ---------- */
+let camStream=null,camDetector=null,camActive=false,camTrack=null,camCaps={},torchOn=false,camTarget='scan';
+const camSupported='BarcodeDetector' in window&&!!navigator.mediaDevices;
+document.getElementById('btnCam').addEventListener('click',()=>{camTarget='scan';openCamera()});document.getElementById('btnSearchCam').addEventListener('click',()=>{camTarget='search';openCamera()});document.getElementById('camClose').addEventListener('click',closeCamera);
+async function openCamera(){const m=document.getElementById('camMsg');document.getElementById('camModal').classList.add('show');m.textContent='Käivitan kaamera…';try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false})}catch(e){m.textContent='Kaamera viga: '+e.message;return}const v=document.getElementById('camVideo');v.srcObject=camStream;try{await v.play()}catch(e){}camTrack=camStream.getVideoTracks()[0];await configureCamera();if(!camDetector)camDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']});m.textContent='Suuna kaamera triipkoodile…';camActive=true;detectLoop()}
+async function configureCamera(){camCaps=camTrack.getCapabilities?camTrack.getCapabilities():{};const modes=camCaps.focusMode||[];if(modes.includes('continuous'))try{await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch(e){}document.getElementById('btnAutoFocus').disabled=!modes.includes('continuous');document.getElementById('btnManualFocus').disabled=!(modes.includes('manual')&&camCaps.focusDistance);document.getElementById('btnTorch').style.display=camCaps.torch?'':'none';document.getElementById('zoomGroup').hidden=!camCaps.zoom;document.getElementById('camTech').textContent=(camTrack.label||'Kaamera')+' · '+(modes.join(', ')||'fookusrežiime ei avaldata')}
+document.getElementById('btnAutoFocus').onclick=async()=>{try{await camTrack.applyConstraints({advanced:[{focusMode:'continuous'}]});document.getElementById('manualFocusGroup').hidden=true}catch(e){}};document.getElementById('btnManualFocus').onclick=()=>{document.getElementById('manualFocusGroup').hidden=false;setManualFocus()};
+async function setManualFocus(){const fd=camCaps.focusDistance,step=+document.getElementById('focusSlider').value;if(!fd)return;const val=fd.min+(fd.max-fd.min)*step/3;document.getElementById('focusVal').textContent=(step+1)+'/4';try{await camTrack.applyConstraints({advanced:[{focusMode:'manual',focusDistance:val}]})}catch(e){}}
+document.getElementById('focusSlider').oninput=setManualFocus;document.getElementById('zoomSlider').oninput=async e=>{const z=camCaps.zoom,t=[1,1.5,3][+e.target.value],val=Math.min(z.max,Math.max(z.min,t));document.getElementById('zoomVal').textContent=String(val).replace('.',',')+'×';try{await camTrack.applyConstraints({advanced:[{zoom:val}]})}catch(e){}};document.getElementById('btnTorch').onclick=async()=>{torchOn=!torchOn;try{await camTrack.applyConstraints({advanced:[{torch:torchOn}]})}catch(e){torchOn=!torchOn}};
+async function detectLoop(){if(!camActive)return;const v=document.getElementById('camVideo');try{if(v.readyState>=2){const c=await camDetector.detect(v);if(c.length){onCameraDetect(c[0].rawValue);return}}}catch(e){}requestAnimationFrame(detectLoop)}
+function onCameraDetect(val){camActive=false;closeCamera();if(camTarget==='search'){const q=document.getElementById('search');q.value=val;q.dispatchEvent(new Event('input'));camTarget='scan'}else handleScan(resolve(val),val)}
+function closeCamera(){camActive=false;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}camTrack=null;camCaps={};document.getElementById('camVideo').srcObject=null;document.getElementById('camModal').classList.remove('show')}
 function handleScan(part,raw){
   const existing=partEntries(part);
   // same location already open for this part → reuse that entry
@@ -422,7 +298,7 @@ function openEntry(id,raw){
       <button class="step" onclick="bump(-1)">−</button>
       <input type="number" id="qtyIn" placeholder="−" value="${e.qty===null?'':e.qty}" step="1" class="${e.qty===null?'unset':''}">
       <button class="step" onclick="bump(1)">+</button>
-      <button onclick="document.getElementById('scan').focus()">Valmis</button>
+      <button onclick="finishQuantityAndScan()"><span class="barcodeIcon">▥</span> Uus skann</button>
       ${camSupported?`<button class="sec" onclick="openCamera()">📷 Järgmine</button>`:''}
     </div>`;
   const qi=document.getElementById('qtyIn');
@@ -484,15 +360,8 @@ function pickPart(p){
 }
 
 /* ---------- table ---------- */
-function formatPrice(p){return prices[p]===undefined?'Hind puudub':new Intl.NumberFormat('et-EE',{style:'currency',currency:'EUR'}).format(prices[p])}
-function render(){
- const stockCount=activeStockParts().length,counted=new Set(entries.filter(e=>e.qty!==null&&sq(e.part)>0).map(e=>e.part));
- const parts=[...new Set(entries.map(e=>e.part))].sort(); let negQty=0,posQty=0,negSum=0,posSum=0;
- const html=parts.map(p=>{const tot=partTotal(p),st=sq(p),d=tot===null?null:tot-st,price=prices[p]||0;if(d<0){negQty+=-d;negSum+=(-d)*price}if(d>0){posQty+=d;posSum+=d*price}const cls=d===0?'match':d>0?'over':'under';const dt=d===null?'Kogus sisestamata':d===0?'Laoseisuga võrdne':`Vahe ${d>0?'+':''}${d}`;const es=partEntries(p),e=es[0],locs=[...new Set(es.map(x=>x.loc).filter(Boolean))].join(', ')||'Asukoht määramata';return `<article class="invCard"><div><div class="itemCode">${esc(p)}</div><div class="itemName">${esc(names[p]||'Nimetus hinnakirjas puudub')}</div><div class="itemPrice">${formatPrice(p)}</div></div><div class="itemNums"><div class="qty">Loetud ${tot===null?'−':tot}</div><div class="stockTxt">Laoseis ${st}</div><div class="pill ${cls}">${dt}</div></div><div class="rowActions"><div class="locTxt">${esc(locs)}</div><div class="mini"><button onclick="adj(${e.id},-1)">−</button><button onclick="adj(${e.id},1)">+</button><button class="del" onclick="delPart('${esc(p)}')">✕</button></div></div></article>`}).join('');
- document.getElementById('tblWrap').innerHTML=html||'<div class="emptyState">Loetud artiklid ilmuvad siia.</div>';document.getElementById('readCount').textContent=`${counted.size} / ${stockCount}`;document.getElementById('progBar').style.width=(stockCount?Math.round(counted.size/stockCount*100):0)+'%';document.getElementById('negQty').textContent=negQty+' tk';document.getElementById('posQty').textContent=posQty+' tk';document.getElementById('negSum').textContent=formatMoney(negSum);document.getElementById('posSum').textContent=formatMoney(posSum);
-}
-function formatMoney(v){return new Intl.NumberFormat('et-EE',{style:'currency',currency:'EUR'}).format(v)}
-function delPart(p){if(confirm('Kustutada artikli '+p+' kõik kirjed?')){entries=entries.filter(e=>e.part!==p);render();save()}}
+function formatPrice(p){return prices[p]===undefined?'Hind puudub':new Intl.NumberFormat('et-EE',{style:'currency',currency:'EUR'}).format(prices[p])}function money(v){return new Intl.NumberFormat('et-EE',{style:'currency',currency:'EUR'}).format(v)}
+function render(){const total=activeStockParts().length,counted=new Set(entries.filter(e=>e.qty!==null&&sq(e.part)>0).map(e=>e.part));let nq=0,pq=0,ns=0,ps=0;const parts=[...new Set(entries.map(e=>e.part))];document.getElementById('tblWrap').innerHTML=parts.map(p=>{const t=partTotal(p),st=sq(p),d=t===null?null:t-st,pr=prices[p]||0;if(d<0){nq+=-d;ns+=-d*pr}if(d>0){pq+=d;ps+=d*pr}const cls=d===null?'pending':d===0?'match':d>0?'over':'under',txt=d===null?'Kogus sisestamata':d===0?'Laoseisuga võrdne':`Vahe ${d>0?'+':''}${d}`,e=partEntries(p)[0];return `<article class="invCard"><div><div class="itemCode">${esc(p)}</div><div class="itemName">${esc(names[p]||'Nimetus puudub')}</div><div class="itemPrice">${formatPrice(p)}</div></div><div class="itemNums"><b>Loetud ${t===null?'−':t}</b><div>Laoseis ${st}</div><span class="pill ${cls}">${txt}</span></div><div class="rowActions"><span>${esc(e.loc||'Asukoht määramata')}</span><div class="mini"><button onclick="adj(${e.id},-1)">−</button><button onclick="adj(${e.id},1)">+</button><button onclick="delEntry(${e.id})">✕</button></div></div></article>`}).join('')||'<div class="emptyState">Loetud artiklid ilmuvad siia.</div>';document.getElementById('readCount').textContent=`${counted.size} / ${total}`;document.getElementById('progBar').style.width=(total?counted.size/total*100:0)+'%';document.getElementById('negQty').textContent=nq+' tk';document.getElementById('negSum').textContent=money(ns);document.getElementById('posQty').textContent=pq+' tk';document.getElementById('posSum').textContent=money(ps)}
 function adj(id,d){const e=getEntry(id);if(!e)return;e.qty=Math.max(0,(e.qty===null?0:e.qty)+d);
   if(activeId===id){const q=document.getElementById('qtyIn');if(q){q.value=e.qty;q.classList.remove('unset')}refreshCard()}render();save();}
 function setEntryLoc(id,v){const e=getEntry(id);if(!e)return;e.loc=v.trim();if(activeId===id)openEntry(id,null);else{render();save();}}
@@ -530,12 +399,7 @@ function restore(){
 ['tech','sdate'].forEach(id=>document.getElementById(id).addEventListener('input',save));
 
 /* ---------- export (duplicates summed, Loetud moved forward) ---------- */
-document.getElementById('btnCsv').addEventListener('click',()=>{
- const parts=[...new Set(entries.map(e=>e.part))].filter(p=>{const t=partTotal(p);return t!==null&&t>0}).sort();
- let csv='Artikkel;Loetud;Laoseis;Vahe;Nimetus;Hind;Asukoht\n';
- parts.forEach(p=>{const tot=partTotal(p),locs=partEntries(p).filter(e=>e.qty!==null&&e.qty>0).map(e=>`${e.loc||'—'}:${e.qty}`).join(' | ');csv+=`${p};${tot};${sq(p)};${tot-sq(p)};${(names[p]||'').replace(/;/g,',')};${prices[p]??''};${locs}\n`});
- if(!parts.length){alert('Eksportimiseks pole loetud artikleid.');return}dl(`inventuur_${(document.getElementById('tech').value||'tehnik').replace(/\s+/g,'_')}.csv`,'\uFEFF'+csv,'text/csv;charset=utf-8');
-});
+document.getElementById('btnCsv').addEventListener('click',()=>{const parts=[...new Set(entries.map(e=>e.part))].filter(p=>partTotal(p)>0);let csv='Artikkel;Loetud;Laoseis;Vahe;Nimetus;Hind;Asukoht\n';parts.forEach(p=>{const t=partTotal(p),loc=partEntries(p).map(e=>`${e.loc||'—'}:${e.qty??'—'}`).join(' | ');csv+=`${p};${t};${sq(p)};${t-sq(p)};${(names[p]||'').replace(/;/g,',')};${prices[p]??''};${loc}\n`});dl('inventuur.csv','\uFEFF'+csv,'text/csv;charset=utf-8')});
 document.getElementById('btnJson').addEventListener('click',()=>dl('inventuur_varukoopia.json',localStorage.getItem(LS_KEY)||'{}','application/json'));
 document.getElementById('btnLoad').addEventListener('click',()=>document.getElementById('fileJson').click());
 document.getElementById('fileJson').addEventListener('change',e=>{
@@ -551,10 +415,7 @@ function dl(n,c,m){const a=document.createElement('a');const u=URL.createObjectU
   a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-
-function showPage(n){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+n));document.querySelectorAll('.navBtn').forEach(x=>x.classList.toggle('active',x.dataset.page===n));if(n==='scan')setTimeout(()=>document.getElementById('scan').focus(),100);scrollTo(0,0)}
-document.querySelectorAll('.navBtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-
+const manualEntry=document.getElementById('manualEntry');document.getElementById('btnManualEntry').onclick=()=>{manualEntry.classList.add('show');setTimeout(()=>scanEl.focus(),40)};document.getElementById('btnManualSubmit').onclick=()=>{const v=scanEl.value.trim();if(v){scanEl.value='';manualEntry.classList.remove('show');handleScan(resolve(v),v)}};function finishQuantityAndScan(){const q=document.getElementById('qtyIn');if(q&&q.value.trim()===''){q.focus();return}document.getElementById('card').className='card';activeId=null;openCamera()}let wakeLock=null;async function requestWakeLock(){if(!('wakeLock'in navigator)){document.getElementById('wakeStatus').textContent='Ekraani aktiivsena hoidmine pole toetatud';return}try{if(!wakeLock||wakeLock.released)wakeLock=await navigator.wakeLock.request('screen');document.getElementById('wakeStatus').textContent='Ekraan püsib aktiivne'}catch(e){document.getElementById('wakeStatus').textContent='Ekraani aktiivsena hoidmine ei õnnestunud'}}document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('page-scan').classList.contains('active'))requestWakeLock()});function showPage(n){document.querySelectorAll('.appPage').forEach(x=>x.classList.toggle('active',x.id==='page-'+n));document.querySelectorAll('.navBtn').forEach(x=>x.classList.toggle('active',x.dataset.page===n));if(n==='scan'){requestWakeLock();setTimeout(()=>{if(!camStream)openCamera()},80)}scrollTo(0,0)}document.querySelectorAll('.navBtn').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 restore(); render();
 </script>
 </body>
