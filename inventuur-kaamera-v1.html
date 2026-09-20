@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Inventuur — skanneri terminal</title>
+<style>
+:root{
+  --bg:#16181A; --panel:#1F2225; --panel2:#272B2F; --line:#343A40;
+  --text:#E8E6E3; --dim:#8E9499; --accent:#E0A33E; --ok:#6FA36F; --warn:#C25E4F; --blue:#5E8CA8;
+  --mono:'SF Mono',Consolas,Menlo,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+h1{font-size:17px;margin:0;font-weight:600}
+.sub{font-size:12px;color:var(--dim)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:12px;color:var(--dim);margin:0 0 10px;font-weight:600}
+input[type=text],input[type=number]{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:8px 10px;font-size:14px;font-family:inherit}
+
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.drops{grid-template-columns:1fr}}
+.drop{border:1.5px dashed var(--line);border-radius:6px;padding:18px 14px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover{border-color:var(--accent);background:var(--panel2)}
+.drop.over{border-color:var(--accent);background:#2E2A20}
+.drop.loaded{border-style:solid;border-color:var(--ok)}
+.drop .t{font-size:13px;font-weight:600;margin-bottom:4px}
+.drop .d{font-size:11px;color:var(--dim);line-height:1.5}
+.drop .st{font-size:11px;color:var(--ok);margin-top:6px;font-family:var(--mono)}
+.drop .st.err{color:var(--warn)}
+
+/* location bar */
+.locbar{background:linear-gradient(90deg,#2A2E22,#1F2225);border:1px solid var(--accent);border-radius:6px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.locbar .lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+.locbar .cur{font-size:19px;font-weight:600;color:var(--accent);font-family:var(--mono)}
+.locbar input{flex:1;min-width:150px}
+
+.scanbox{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:14px;margin-bottom:12px}
+#scan{width:100%;font-size:21px;padding:13px;font-family:var(--mono);letter-spacing:.5px}
+#scan:focus{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:11px;color:var(--dim);margin-top:7px;line-height:1.5}
+
+.card{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:5px;padding:14px;margin-top:12px;display:none}
+.card.show{display:block}
+.card.unknown{border-left-color:var(--warn)}
+.card .code{font-family:var(--mono);font-size:15px;color:var(--accent)}
+.card .name{font-size:15px;margin:4px 0 10px;line-height:1.4}
+.card .meta{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:12px}
+.card .meta b{display:block;font-size:17px;color:var(--text);font-family:var(--mono);margin-top:2px}
+.dupwarn{background:#2E2620;border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:9px 11px;margin-bottom:11px;font-size:12px;line-height:1.6}
+.dupwarn .h{color:var(--accent);font-weight:600;margin-bottom:3px}
+.dupwarn .l{font-family:var(--mono);color:var(--text)}
+.qtyrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qtyrow input{width:100px;font-size:19px;padding:8px;text-align:center;font-family:var(--mono)}
+.qtyrow input.unset{color:var(--dim)}
+.step{width:44px;height:44px;font-size:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:4px;cursor:pointer}
+.step:hover{background:#31363B}
+.step.sm{width:30px;height:30px;font-size:15px}
+
+button{background:var(--accent);color:#16181A;border:none;border-radius:4px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+button.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button.sec:hover{background:#31363B}
+
+.scanrow{display:flex;gap:8px}
+.scanrow input{flex:1}
+.camBtn{flex-shrink:0;width:54px;font-size:20px;padding:0;background:var(--panel2);border:1px solid var(--accent);color:var(--accent)}
+
+.camModal{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column}
+.camModal.show{display:flex}
+.camModal video{flex:1;width:100%;object-fit:cover;background:#000}
+.camTop{position:absolute;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 12px;
+  background:linear-gradient(180deg,rgba(0,0,0,.75),transparent);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.camTop .msg{color:#fff;font-size:13px;flex:1;padding-right:10px}
+.camClose{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:18px;flex-shrink:0}
+.camFrame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:78%;max-width:340px;aspect-ratio:5/3;
+  border:2px solid var(--accent);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+.camBottom{position:absolute;bottom:0;left:0;right:0;padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 16px);
+  background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);text-align:center}
+.camBottom .hint{color:#ccc;font-size:12px}
+
+#search{width:100%}
+.results{margin-top:8px;max-height:280px;overflow-y:auto}
+.res{padding:9px 10px;border-bottom:1px solid #2A2E32;cursor:pointer;font-size:13px}
+.res:hover{background:var(--panel2)}
+.res .top{display:flex;justify-content:space-between;gap:10px}
+.res .c{font-family:var(--mono);color:var(--dim);flex-shrink:0}
+.res .stats{font-size:11px;color:var(--dim);margin-top:3px;font-family:var(--mono);display:flex;gap:14px;flex-wrap:wrap}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--dim);font-size:11px;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+th.n,td.n{text-align:right}
+td{padding:6px 8px;border-bottom:1px solid #262A2E;vertical-align:middle}
+tr:hover td{background:var(--panel2)}
+td.code{font-family:var(--mono);color:var(--dim);white-space:nowrap}
+td.n{font-family:var(--mono)}
+td.loc input{width:100%;min-width:80px;padding:4px 6px;font-size:12px;font-family:var(--mono);background:transparent;border:1px solid transparent;color:var(--blue)}
+td.loc input:hover{border-color:var(--line)}
+td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
+.tbl-wrap{max-height:440px;overflow-y:auto}
+.over{color:var(--accent)} .under{color:var(--warn)} .match{color:var(--ok)} .unset{color:var(--dim)}
+.sumbar{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:10px}
+.sumbar b{color:var(--text);font-family:var(--mono)}
+.progress{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-bottom:12px}
+.progress span{display:block;height:100%;background:var(--ok);transition:width .3s}
+.empty{text-align:center;color:var(--dim);font-size:13px;padding:24px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:13px;margin-top:14px}
+.save-ind{font-size:11px;color:var(--dim);font-family:var(--mono)}
+.badge{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--panel2);color:var(--dim);margin-left:5px}
+.badge.dup{background:#3A2F20;color:var(--accent)}
+.note{font-size:11px;color:var(--dim);background:var(--panel2);border-left:2px solid var(--line);padding:8px 10px;border-radius:0 4px 4px 0;margin-top:9px;line-height:1.55}
+.del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px}
+.del:hover{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div><h1>Inventuur — skanneri terminal</h1>
+  <div class="sub">Bluetooth HID skanner · asukohapõhine lugemine</div></div>
+  <div class="save-ind" id="saveInd">—</div>
+</header>
+
+<div class="panel">
+  <h2>Tehnik</h2>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <input type="text" id="tech" placeholder="Tehniku nimi" style="flex:1;min-width:150px">
+    <input type="text" id="sdate" placeholder="Kuupäev" style="flex:1;min-width:120px">
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Andmefailid — lohista failid siia</h2>
+  <div class="drops">
+    <div class="drop" id="dropPrice"><div class="t">Hinnakiri</div>
+      <div class="d">Part # · Product · Bar Code<br>Lohista fail või klõpsa</div>
+      <div class="st" id="stPrice"></div></div>
+    <div class="drop" id="dropStock"><div class="t">Laoseis</div>
+      <div class="d">Part # · Product · Quantity Available<br>Lohista fail või klõpsa</div>
+      <div class="st" id="stStock"></div></div>
+  </div>
+  <input type="file" id="filePrice" accept=".csv,.txt,.tsv" hidden>
+  <input type="file" id="fileStock" accept=".csv,.txt,.tsv" hidden>
+  <div class="note">Failid loetakse ainult sinu arvutis. UTF-16 ja TAB-eraldus tuvastatakse automaatselt.</div>
+</div>
+
+<div class="locbar">
+  <div>
+    <div class="lbl">Praegune asukoht</div>
+    <div class="cur" id="curLoc">— määramata —</div>
+  </div>
+  <input type="text" id="locInput" placeholder="nt. Riiul 2, Sahtel A, Põrand…">
+  <button id="btnSetLoc">Määra asukoht</button>
+</div>
+
+<div class="scanbox">
+  <h2 style="font-size:12px;color:var(--dim);margin:0 0 9px;font-weight:600">Skanni artikkel</h2>
+  <div class="scanrow">
+    <input type="text" id="scan" placeholder="Skanni või trüki artikli nr / EAN…" autocomplete="off">
+    <button class="camBtn" id="btnCam" title="Skanni kaameraga">📷</button>
+  </div>
+  <div class="hint">Bluetooth HID skanner töötab klaviatuurina — hoia väli fookuses. Või kasuta 📷 telefoni kaamera lugemiseks. Kogus jääb märkeni „−", kuni sisestad tegeliku arvu.</div>
+  <div class="card" id="card"></div>
+</div>
+
+<div class="panel">
+  <h2>Otsi / kontrolli artiklit</h2>
+  <input type="text" id="search" placeholder="Otsi artikli numbri või nimetuse järgi…" autocomplete="off">
+  <div class="results" id="results"></div>
+</div>
+
+<div class="panel">
+  <h2>Loetud artiklid</h2>
+  <div class="sumbar" id="sumbar"></div>
+  <div class="progress"><span id="progBar" style="width:0%"></span></div>
+  <div class="tbl-wrap" id="tblWrap"><div class="empty">Loetud artiklid ilmuvad siia.</div></div>
+  <div class="actions">
+    <button id="btnCsv">Ekspordi CSV</button>
+    <button class="sec" id="btnJson">Salvesta varukoopia (.json)</button>
+    <button class="sec" id="btnLoad">Laadi varukoopia</button>
+    <button class="sec" id="btnClear">Tühjenda loetud</button>
+    <input type="file" id="fileJson" accept=".json" hidden>
+  </div>
+</div>
+
+</div>
+
+<div class="camModal" id="camModal">
+  <video id="camVideo" playsinline muted autoplay></video>
+  <div class="camFrame"></div>
+  <div class="camTop">
+    <div class="msg" id="camMsg">Käivitan kaamera…</div>
+    <button class="camClose" id="camClose">✕</button>
+  </div>
+  <div class="camBottom"><div class="hint">Suuna kaamera otse triipkoodile, hoia telefon paigal</div></div>
+</div>
+
+<script>
+'use strict';
+const LS_KEY='inventuur_v2';
+
+let names={}, stock={}, eanMap={};
+let entries=[];          // {id, part, loc, qty}  qty=null => not yet entered
+let activeId=null, curLoc='', searchIndex=[], seq=1;
+
+/* ---------- file reading ---------- */
+function readFile(file,cb){
+  const fr=new FileReader();
+  fr.onload=e=>{
+    const b=new Uint8Array(e.target.result);
+    let t;
+    if(b[0]===0xFF&&b[1]===0xFE) t=new TextDecoder('utf-16le').decode(b);
+    else if(b[0]===0xFE&&b[1]===0xFF) t=new TextDecoder('utf-16be').decode(b);
+    else t=new TextDecoder('utf-8').decode(b);
+    cb(t);
+  };
+  fr.readAsArrayBuffer(file);
+}
+function parseTable(text){
+  text=text.replace(/^\uFEFF/,'').replace(/\r/g,'');
+  const f=text.split('\n')[0];
+  const c={'\t':(f.match(/\t/g)||[]).length,';':(f.match(/;/g)||[]).length,',':(f.match(/,/g)||[]).length};
+  const d=Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
+  return text.split('\n').filter(l=>l.trim()).map(l=>l.split(d).map(x=>x.trim().replace(/^"|"$/g,'')));
+}
+function findCol(h,keys){const l=h.map(x=>x.toLowerCase());for(const k of keys){const i=l.findIndex(x=>x.includes(k));if(i>=0)return i;}return -1;}
+function num(v){if(!v)return 0;const n=parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.'));return isNaN(n)?0:n;}
+
+function setupDrop(z,i,h){
+  const zone=document.getElementById(z),inp=document.getElementById(i);
+  zone.addEventListener('click',()=>inp.click());
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');if(e.dataTransfer.files[0])h(e.dataTransfer.files[0],zone)});
+  inp.addEventListener('change',e=>{if(e.target.files[0])h(e.target.files[0],zone)});
+}
+
+setupDrop('dropPrice','filePrice',(file,zone)=>{
+  readFile(file,text=>{
+    try{
+      const rows=parseTable(text),h=rows[0];
+      const cP=findCol(h,['part','artikk','kood']), cN=findCol(h,['product','nimet','description']), cB=findCol(h,['bar code','barcode','ean','triipkood']);
+      if(cP<0) throw new Error('Artikli veergu ei leitud');
+      let ean=0,sci=0;
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
+        const nm=cN>=0?(r[cN]||'').trim():''; if(nm&&!names[p])names[p]=nm;
+        if(cB>=0){const b=(r[cB]||'').trim();
+          if(b&&/^\d{6,14}$/.test(b)){if(!eanMap[b]){eanMap[b]=p;ean++}}
+          else if(b&&/E\+/i.test(b))sci++;}
+      }
+      rebuildIndex(); zone.classList.add('loaded');
+      let m=`${Object.keys(names).length} nimetust, ${ean} EAN-koodi`;
+      document.getElementById('stPrice').innerHTML=sci>0?m+`<br><span style="color:var(--warn)">⚠ ${sci} EAN rikutud (Excel: 7,32E+12)</span>`:m;
+      render(); save();
+    }catch(e){const el=document.getElementById('stPrice');el.className='st err';el.textContent='Viga: '+e.message}
+  });
+});
+setupDrop('dropStock','fileStock',(file,zone)=>{
+  readFile(file,text=>{
+    try{
+      const rows=parseTable(text),h=rows[0];
+      const cP=findCol(h,['part','artikk','kood']),cN=findCol(h,['product','nimet','description']),cQ=findCol(h,['quantity available','laoseis','kogus','qty','total in van']);
+      if(cP<0) throw new Error('Artikli veergu ei leitud');
+      let n=0;
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i],p=(r[cP]||'').trim(); if(!p)continue;
+        stock[p]=cQ>=0?num(r[cQ]):0;
+        const nm=cN>=0?(r[cN]||'').trim():''; if(nm)names[p]=nm;
+        n++;
+      }
+      rebuildIndex(); zone.classList.add('loaded');
+      document.getElementById('stStock').textContent=`${n} artiklit laoseisus`;
+      render(); save();
+    }catch(e){const el=document.getElementById('stStock');el.className='st err';el.textContent='Viga: '+e.message}
+  });
+});
+function rebuildIndex(){
+  const s=new Set([...Object.keys(names),...Object.keys(stock)]);
+  searchIndex=[...s].map(p=>({p,n:names[p]||'',low:(p+' '+(names[p]||'')).toLowerCase()}));
+}
+
+/* ---------- location ---------- */
+const locInput=document.getElementById('locInput');
+function setLoc(){
+  const v=locInput.value.trim();
+  if(!v)return;
+  curLoc=v; locInput.value='';
+  document.getElementById('curLoc').textContent=curLoc;
+  document.getElementById('scan').focus();
+  save();
+}
+document.getElementById('btnSetLoc').addEventListener('click',setLoc);
+locInput.addEventListener('keydown',e=>{if(e.key==='Enter')setLoc()});
+
+/* ---------- entries helpers ---------- */
+// artiklit, mida laoseisu tabelis pole, käsitleme laokogusega 0
+function sq(p){return stock[p]!==undefined?stock[p]:0}
+// "jäänud lugeda" ja eksport arvestavad ainult artikleid, mille laokogus > 0
+function activeStockParts(){return Object.keys(stock).filter(p=>stock[p]>0)}
+function partEntries(p){return entries.filter(e=>e.part===p)}
+function partTotal(p){
+  const es=partEntries(p).filter(e=>e.qty!==null);
+  return es.length?es.reduce((a,e)=>a+e.qty,0):null;
+}
+function getEntry(id){return entries.find(e=>e.id===id)}
+
+/* ---------- scanning ---------- */
+const scanEl=document.getElementById('scan');
+scanEl.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const v=scanEl.value.trim();scanEl.value='';if(v)handleScan(resolve(v),v);}
+});
+scanEl.focus();
+document.addEventListener('click',e=>{if(!e.target.closest('input,button,.res,.drop'))setTimeout(()=>scanEl.focus(),40)});
+function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
+
+/* ---------- camera scanning (phone) ---------- */
+let camStream=null, camDetector=null, camActive=false;
+const camSupported = 'BarcodeDetector' in window && !!navigator.mediaDevices;
+document.getElementById('btnCam').style.display = camSupported ? '' : 'none';
+
+document.getElementById('btnCam').addEventListener('click', openCamera);
+document.getElementById('camClose').addEventListener('click', closeCamera);
+
+async function openCamera(){
+  const modal=document.getElementById('camModal'), msg=document.getElementById('camMsg');
+  modal.classList.add('show'); msg.textContent='Käivitan kaamera…';
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}}});
+  }catch(err){
+    msg.textContent = 'Kaamerale ligipääs ebaõnnestus: '+err.message;
+    return;
+  }
+  const video=document.getElementById('camVideo');
+  video.srcObject=camStream;
+  try{ await video.play(); }catch(e){}
+  if(!camDetector){
+    try{ camDetector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']}); }
+    catch(e){ msg.textContent='Kaamera triipkoodilugemine pole selles brauseris toetatud.'; return; }
+  }
+  msg.textContent='Suuna kaamera triipkoodile…';
+  camActive=true;
+  detectLoop();
+}
+
+async function detectLoop(){
+  if(!camActive) return;
+  const video=document.getElementById('camVideo');
+  try{
+    if(video.readyState>=2){
+      const codes = await camDetector.detect(video);
+      if(codes && codes.length){
+        onCameraDetect(codes[0].rawValue);
+        return;
+      }
+    }
+  }catch(err){ /* mööda vahele jäänud kaader, jätkame */ }
+  if(camActive) requestAnimationFrame(detectLoop);
+}
+
+function onCameraDetect(val){
+  camActive=false;
+  if(navigator.vibrate) navigator.vibrate(70);
+  document.getElementById('camMsg').textContent = '✓ '+val;
+  closeCamera();
+  handleScan(resolve(val), val);
+}
+
+function closeCamera(){
+  camActive=false;
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  document.getElementById('camModal').classList.remove('show');
+}
+
+function handleScan(part,raw){
+  const existing=partEntries(part);
+  // same location already open for this part → reuse that entry
+  const sameLoc=existing.find(e=>e.loc===curLoc);
+  if(sameLoc){ openEntry(sameLoc.id,raw); return; }
+  const ent={id:seq++,part,loc:curLoc,qty:null};
+  entries.push(ent);
+  openEntry(ent.id,raw);
+}
+
+function openEntry(id,raw){
+  activeId=id;
+  const e=getEntry(id); if(!e)return;
+  const p=e.part;
+  const known=names[p]!==undefined||stock[p]!==undefined;
+  const others=partEntries(p).filter(x=>x.id!==id);
+  const viaEan=raw&&raw!==p;
+  const tot=partTotal(p);
+  const card=document.getElementById('card');
+  card.className='card show'+(known?'':' unknown');
+  card.innerHTML=`
+    <div class="code">${esc(p)}${viaEan?`<span class="badge">EAN ${esc(raw)}</span>`:''}${known?'':'<span class="badge" style="color:var(--warn)">hinnakirjas puudub</span>'}</div>
+    <div class="name">${esc(names[p]||'— nimetus puudub —')}</div>
+    ${others.length?`<div class="dupwarn">
+       <div class="h">⚠ Duplikaat — see artikkel on juba loetud mujal:</div>
+       ${others.map(o=>`<div class="l">${esc(o.loc||'(asukohata)')} → ${o.qty===null?'<span style="color:var(--dim)">kogus sisestamata</span>':o.qty+' tk'}</div>`).join('')}
+       <div style="color:var(--dim);margin-top:4px">Ekspordis liidetakse kogused automaatselt kokku.</div>
+     </div>`:''}
+    <div class="meta">
+      <div>Asukoht<b style="color:var(--blue)">${esc(e.loc||'—')}</b></div>
+      <div>Laoseisu järgi<b>${sq(p)}</b></div>
+      <div>Selles asukohas<b id="cvView">${e.qty===null?'−':e.qty}</b></div>
+      ${others.length?`<div>Kokku kõik asukohad<b id="cvTot">${tot===null?'−':tot}</b></div>`:''}
+      <div>Vahe<b id="cvDiff">—</b></div>
+    </div>
+    <div class="qtyrow">
+      <button class="step" onclick="bump(-1)">−</button>
+      <input type="number" id="qtyIn" placeholder="−" value="${e.qty===null?'':e.qty}" step="1" class="${e.qty===null?'unset':''}">
+      <button class="step" onclick="bump(1)">+</button>
+      <button onclick="document.getElementById('scan').focus()">Valmis</button>
+      ${camSupported?`<button class="sec" onclick="openCamera()">📷 Järgmine</button>`:''}
+    </div>`;
+  const qi=document.getElementById('qtyIn');
+  qi.addEventListener('input',()=>{
+    const v=qi.value.trim();
+    e.qty = v===''?null:(parseFloat(v)||0);
+    qi.classList.toggle('unset',e.qty===null);
+    refreshCard(); render(); save();
+  });
+  qi.addEventListener('keydown',ev=>{if(ev.key==='Enter')document.getElementById('scan').focus()});
+  qi.focus(); qi.select();
+  refreshCard(); render(); save();
+}
+
+function bump(d){
+  const e=getEntry(activeId); if(!e)return;
+  e.qty=Math.max(0,(e.qty===null?0:e.qty)+d);
+  const q=document.getElementById('qtyIn'); if(q){q.value=e.qty;q.classList.remove('unset');}
+  refreshCard(); render(); save();
+}
+
+function refreshCard(){
+  const e=getEntry(activeId); if(!e)return;
+  const v=document.getElementById('cvView'); if(v)v.textContent=e.qty===null?'−':e.qty;
+  const t=document.getElementById('cvTot'); const tot=partTotal(e.part);
+  if(t)t.textContent=tot===null?'−':tot;
+  const d=document.getElementById('cvDiff');
+  if(d){
+    if(tot===null){d.textContent='—';d.className='';}
+    else{const diff=tot-sq(e.part);d.textContent=(diff>0?'+':'')+diff;d.className=diff>0?'over':diff<0?'under':'match';}
+  }
+}
+
+/* ---------- search ---------- */
+const searchEl=document.getElementById('search');
+searchEl.addEventListener('input',()=>{
+  const q=searchEl.value.trim().toLowerCase(), box=document.getElementById('results');
+  if(q.length<2){box.innerHTML='';return;}
+  const hits=searchIndex.filter(x=>x.low.includes(q)).slice(0,25);
+  box.innerHTML=hits.length?hits.map(x=>{
+    const tot=partTotal(x.p), es=partEntries(x.p);
+    let dtxt='';
+    if(tot!==null){const d=tot-sq(x.p);dtxt=`<span class="${d>0?'over':d<0?'under':'match'}">vahe ${(d>0?'+':'')+d}</span>`;}
+    const locs=es.length?es.map(e=>`${esc(e.loc||'—')}:${e.qty===null?'−':e.qty}`).join(', '):'';
+    return `<div class="res" onclick="pickPart('${esc(x.p)}')">
+      <div class="top"><span>${esc(x.n||'—')}</span><span class="c">${esc(x.p)}</span></div>
+      <div class="stats">
+        <span>peab olema: <b style="color:var(--text)">${sq(x.p)}</b></span>
+        <span>loetud: <b style="color:var(--text)">${tot===null?'<span class="unset">pole loetud</span>':tot}</b></span>
+        ${dtxt}${locs?`<span style="color:var(--blue)">${locs}</span>`:''}
+      </div></div>`;
+  }).join(''):'<div class="empty" style="padding:12px">Vasteid ei leitud</div>';
+});
+function pickPart(p){
+  const es=partEntries(p);
+  if(es.length) openEntry(es[es.length-1].id,null);
+  else handleScan(p,null);
+  searchEl.value=''; document.getElementById('results').innerHTML='';
+}
+
+/* ---------- table ---------- */
+function render(){
+  const wrap=document.getElementById('tblWrap'), sb=document.getElementById('sumbar');
+  const activeParts=activeStockParts();          // ainult laoseis > 0
+  const stockParts=activeParts.length;
+  const countedParts=new Set(entries.filter(e=>e.qty!==null).map(e=>e.part));
+  const doneActive=activeParts.filter(p=>countedParts.has(p)).length;
+  const remaining=Math.max(0,stockParts-doneActive);
+  const pending=entries.filter(e=>e.qty===null).length;
+
+  if(!entries.length){wrap.innerHTML='<div class="empty">Loetud artiklid ilmuvad siia.</div>';}
+  else{
+    let over=0,under=0,match=0,total=0;
+    const seen=new Set();
+    const sorted=[...entries].sort((a,b)=>a.part===b.part?a.id-b.id:(a.part<b.part?-1:1));
+    const rows=sorted.map(e=>{
+      const p=e.part, tot=partTotal(p), dup=partEntries(p).length>1;
+      if(e.qty!==null)total+=e.qty;
+      if(!seen.has(p)){seen.add(p);
+        if(tot!==null){const d=tot-sq(p);if(d>0)over++;else if(d<0)under++;else match++;}}
+      let dcell='<td class="n">—</td>';
+      if(tot!==null){const d=tot-sq(p);dcell=`<td class="n ${d>0?'over':d<0?'under':'match'}">${(d>0?'+':'')+d}</td>`;}
+      return `<tr>
+        <td class="code">${esc(p)}${dup?'<span class="badge dup">dup ×'+partEntries(p).length+'</span>':''}</td>
+        <td>${esc(names[p]||'—')}</td>
+        <td class="loc"><input type="text" value="${esc(e.loc||'')}" placeholder="asukoht" onchange="setEntryLoc(${e.id},this.value)"></td>
+        <td class="n"><button class="step sm" onclick="adj(${e.id},-1)">−</button>
+          <span style="display:inline-block;min-width:34px;text-align:center" class="${e.qty===null?'unset':''}">${e.qty===null?'−':e.qty}</span>
+          <button class="step sm" onclick="adj(${e.id},1)">+</button></td>
+        <td class="n">${sq(p)}${dup?`<span class="badge">Σ ${tot===null?'−':tot}</span>`:''}</td>
+        ${dcell}
+        <td><button class="del" onclick="delEntry(${e.id})">✕</button></td></tr>`;
+    }).join('');
+    wrap.innerHTML=`<table><thead><tr><th>Artikkel</th><th>Nimetus</th><th>Asukoht</th><th class="n">Loetud</th><th class="n">Laos</th><th class="n">Vahe</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    sb.innerHTML=`<span>Kirjeid: <b>${entries.length}</b></span>
+      <span>Artikleid loetud: <b>${countedParts.size}</b>${stockParts?' / '+stockParts:''}</span>
+      <span>Jäänud lugeda: <b style="color:var(--accent)">${stockParts?remaining:'?'}</b></span>
+      ${pending?`<span>Kogus sisestamata: <b class="under">${pending}</b></span>`:''}
+      <span>Kokku tk: <b>${total}</b></span>
+      <span>Klapib: <b class="match">${match}</b></span>
+      <span>Ülejääk: <b class="over">${over}</b></span>
+      <span>Puudujääk: <b class="under">${under}</b></span>`;
+  }
+  const pct=stockParts?Math.round((doneActive/stockParts)*100):0;
+  document.getElementById('progBar').style.width=pct+'%';
+  if(!entries.length)sb.innerHTML=stockParts?`<span>Jäänud lugeda: <b style="color:var(--accent)">${stockParts}</b></span>`:'';
+}
+function adj(id,d){const e=getEntry(id);if(!e)return;e.qty=Math.max(0,(e.qty===null?0:e.qty)+d);
+  if(activeId===id){const q=document.getElementById('qtyIn');if(q){q.value=e.qty;q.classList.remove('unset')}refreshCard()}render();save();}
+function setEntryLoc(id,v){const e=getEntry(id);if(!e)return;e.loc=v.trim();if(activeId===id)openEntry(id,null);else{render();save();}}
+function delEntry(id){entries=entries.filter(e=>e.id!==id);
+  if(activeId===id){activeId=null;document.getElementById('card').className='card'}render();save();}
+
+/* ---------- autosave ---------- */
+let st=null;
+function save(){
+  clearTimeout(st);
+  st=setTimeout(()=>{
+    try{
+      localStorage.setItem(LS_KEY,JSON.stringify({tech:document.getElementById('tech').value,
+        date:document.getElementById('sdate').value,names,stock,eanMap,entries,curLoc,seq,ts:Date.now()}));
+      document.getElementById('saveInd').textContent='salvestatud '+new Date().toTimeString().slice(0,8);
+    }catch(e){document.getElementById('saveInd').textContent='⚠ automaatsalvestus ei tööta'}
+  },400);
+}
+function restore(){
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw)return;
+    const s=JSON.parse(raw);
+    names=s.names||{};stock=s.stock||{};eanMap=s.eanMap||{};entries=s.entries||[];
+    curLoc=s.curLoc||'';seq=s.seq||(entries.reduce((a,e)=>Math.max(a,e.id),0)+1);
+    document.getElementById('tech').value=s.tech||'';document.getElementById('sdate').value=s.date||'';
+    if(curLoc)document.getElementById('curLoc').textContent=curLoc;
+    if(Object.keys(names).length){document.getElementById('dropPrice').classList.add('loaded');
+      document.getElementById('stPrice').textContent=`taastatud: ${Object.keys(names).length} nimetust, ${Object.keys(eanMap).length} EAN`}
+    if(Object.keys(stock).length){document.getElementById('dropStock').classList.add('loaded');
+      document.getElementById('stStock').textContent=`taastatud: ${Object.keys(stock).length} artiklit`}
+    rebuildIndex();render();
+    document.getElementById('saveInd').textContent='taastatud eelmine seanss';
+  }catch(e){}
+}
+['tech','sdate'].forEach(id=>document.getElementById(id).addEventListener('input',save));
+
+/* ---------- export (duplicates summed, Loetud moved forward) ---------- */
+document.getElementById('btnCsv').addEventListener('click',()=>{
+  // ainult artiklid, mille loetud kogus on > 0
+  const parts=[...new Set(entries.map(e=>e.part))]
+    .filter(p=>{const t=partTotal(p); return t!==null && t>0;}).sort();
+  let csv='Artikkel;Nimetus;Loetud;Laoseis;Vahe;Asukohad\n';
+  parts.forEach(p=>{
+    const tot=partTotal(p);
+    const locs=partEntries(p).filter(e=>e.qty!==null&&e.qty>0)
+      .map(e=>`${e.loc||'—'}:${e.qty}`).join(' | ');
+    csv+=`${p};${(names[p]||'').replace(/;/g,',')};${tot};${sq(p)};${tot-sq(p)};${locs}\n`;
+  });
+  if(!parts.length){alert('Eksportimiseks pole ühtegi artiklit, mille loetud kogus oleks üle nulli.');return;}
+  dl(`inventuur_${(document.getElementById('tech').value||'tehnik').replace(/\s+/g,'_')}.csv`,'\uFEFF'+csv,'text/csv;charset=utf-8');
+});
+document.getElementById('btnJson').addEventListener('click',()=>dl('inventuur_varukoopia.json',localStorage.getItem(LS_KEY)||'{}','application/json'));
+document.getElementById('btnLoad').addEventListener('click',()=>document.getElementById('fileJson').click());
+document.getElementById('fileJson').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;const fr=new FileReader();
+  fr.onload=ev=>{try{localStorage.setItem(LS_KEY,ev.target.result);location.reload()}catch(x){alert('Varukoopiat ei õnnestunud laadida')}};
+  fr.readAsText(f,'UTF-8');
+});
+document.getElementById('btnClear').addEventListener('click',()=>{
+  if(confirm('Kustutada kõik loetud kirjed? Hinnakiri ja laoseis jäävad alles.')){
+    entries=[];activeId=null;document.getElementById('card').className='card';render();save();}
+});
+function dl(n,c,m){const a=document.createElement('a');const u=URL.createObjectURL(new Blob([c],{type:m}));
+  a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+restore(); render();
+</script>
+</body>
+</html>
