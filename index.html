@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Triipkoodi mootorite test</title>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js"></script>
 <style>
 :root{
   --bg:#16181A; --panel:#1F2225; --panel2:#272B2F; --line:#343A40;
@@ -100,8 +98,11 @@ label.zoom{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--di
     <h2>Aktiivne mootor (pidev tuvastus)</h2>
     <div class="engrow">
       <div class="engbtn sel" data-eng="native"><div class="dot"></div><b>Native</b><small>BarcodeDetector / Google</small></div>
-      <div class="engbtn" data-eng="zxing"><div class="dot"></div><b>ZXing-js</b><small>avatud lähtekood</small></div>
-      <div class="engbtn" data-eng="zbar"><div class="dot"></div><b>ZBar-wasm</b><small>avatud lähtekood</small></div>
+      <div class="engbtn" data-eng="zxing"><div class="dot"></div><b>ZXing-js</b><small id="zxingStatus">laadin…</small></div>
+      <div class="engbtn" data-eng="zbar"><div class="dot"></div><b>ZBar-wasm</b><small id="zbarStatus">laadin…</small></div>
+    </div>
+    <div class="controlrow" style="margin-top:9px">
+      <button class="sec" id="btnRetryLoad">🔄 Laadi mootorid uuesti</button>
     </div>
   </div>
 
@@ -148,25 +149,65 @@ const fpsTag=document.getElementById('fpsTag');
 const offMsg=document.getElementById('offMsg');
 const logBox=document.getElementById('logBox');
 
+/* ---------- dynamic engine script loading with fallback CDNs ---------- */
+function loadScript(url){
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src=url;
+    s.onload=()=>resolve(url);
+    s.onerror=()=>reject(new Error('ei laadinud: '+url));
+    document.head.appendChild(s);
+  });
+}
+async function loadEngineScripts(){
+  document.getElementById('zxingStatus').textContent='laadin…';
+  document.getElementById('zbarStatus').textContent='laadin…';
+
+  // ZXing: proovi jsDelivr, siis unpkg varuvariandina
+  if(typeof ZXingBrowser==='undefined'){
+    try{
+      await loadScript('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js');
+    }catch(e1){
+      logLine('system','ZXing jsDelivr ebaõnnestus, proovin unpkg…',0);
+      try{ await loadScript('https://unpkg.com/@zxing/browser@latest'); }
+      catch(e2){ logLine('system','ZXing laadimine ebaõnnestus mõlemalt CDN-ilt: '+e2.message,0); }
+    }
+  }
+  // ZBar: proovi jsDelivr, siis unpkg
+  if(typeof zbarWasm==='undefined'){
+    try{
+      await loadScript('https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js');
+    }catch(e1){
+      logLine('system','ZBar jsDelivr ebaõnnestus, proovin unpkg…',0);
+      try{ await loadScript('https://unpkg.com/@undecaf/zbar-wasm@0.11.0/dist/index.js'); }
+      catch(e2){ logLine('system','ZBar laadimine ebaõnnestus mõlemalt CDN-ilt: '+e2.message,0); }
+    }
+  }
+  checkAvail();
+}
+document.getElementById('btnRetryLoad').addEventListener('click', loadEngineScripts);
+
 /* ---------- engine availability ---------- */
 function checkAvail(){
   const nativeOk = 'BarcodeDetector' in window;
   const zxingOk = typeof ZXingBrowser !== 'undefined';
+  // zbar-wasm laeb oma wasm-mooduli asünkroonselt isegi pärast script.onload-i
   const zbarOk = typeof zbarWasm !== 'undefined' && typeof zbarWasm.scanImageData === 'function';
   markEngine('native', nativeOk);
   markEngine('zxing', zxingOk);
   markEngine('zbar', zbarOk);
+  document.getElementById('zxingStatus').textContent = zxingOk ? 'laetud ✓' : 'ei laadinud ✗';
+  document.getElementById('zbarStatus').textContent = zbarOk ? 'laetud ✓' : 'ei laadinud ✗';
 }
 function markEngine(id, ok){
   const el = document.querySelector(`.engbtn[data-eng="${id}"]`);
   el.classList.toggle('avail', ok);
-  if(!ok) el.classList.add('unavail');
+  el.classList.toggle('unavail', !ok);
 }
 // zbar-wasm laeb wasm-mooduli asünkroonselt — kontrolli mitu korda
-setTimeout(checkAvail, 300);
+loadEngineScripts();
 setTimeout(checkAvail, 1200);
 setTimeout(checkAvail, 3000);
-checkAvail();
 
 document.querySelectorAll('.engbtn').forEach(el=>{
   el.addEventListener('click', ()=>{
