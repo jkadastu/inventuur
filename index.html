@@ -92,6 +92,11 @@ label.zoom{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--di
       </select>
     </div>
     <label class="zoom" id="zoomRow" style="display:none">Suum <input type="range" id="zoomSlider" min="1" max="1" step="0.1" value="1"> <span id="zoomVal">1.0×</span></label>
+    <label class="zoom" id="focusRow" style="display:none">Fookus <input type="range" id="focusSlider" min="0" max="1" step="0.01" value="0"> <span id="focusVal">—</span></label>
+    <div class="controlrow" id="afScanRow" style="display:none;margin-top:6px">
+      <button class="sec" id="btnAfScan">🎯 Automaatne fookuse-otsing</button>
+      <span id="afScanStatus" style="font-size:11px;color:var(--dim)"></span>
+    </div>
   </div>
 
   <div class="panel">
@@ -297,6 +302,8 @@ function showCapabilities(){
   ].join('');
   if(!(caps.focusMode && caps.focusMode.length)){
     box.innerHTML += `<div class="note" style="margin-top:8px">⚠ See kaamera/brauser ei anna veebilehele üldse fookuse juhtimise võimalust (focusMode puudub) — see selgitab, miks fookuse-koodi muudatused mõju ei avaldanud. Tegu on riistvara/OS piiranguga, mitte tarkvara veaga.</div>`;
+  }else if(!caps.focusMode.includes('continuous')){
+    box.innerHTML += `<div class="note" style="margin-top:8px">⚠ See seade paljastab veebile ainult <b>${esc(JSON.stringify(caps.focusMode))}</b> režiimi(d), mitte "continuous" — nii ei saagi automaatne pidev autofookus veebilehelt tööle hakata, hoolimata sellest, et native kaamera-äpp seda kasutab. Kasuta allpool käsitsi fookuse-liugurit või "Automaatne fookuse-otsing" nuppu, mis proovib mitut fookuskaugust järjest.</div>`;
   }
 }
 
@@ -319,6 +326,81 @@ function setupTorchZoom(){
       try{ await track.applyConstraints({advanced:[{zoom:parseFloat(zoomSlider.value)}]}); }catch(e){}
     };
   }else{ zoomRow.style.display='none'; }
+
+  // fookus: kui riistvara pakub AINULT 'manual' (mitte 'continuous'), näita käsitsi liugurit + automaatset otsingut
+  const focusRow=document.getElementById('focusRow'), focusSlider=document.getElementById('focusSlider');
+  const afScanRow=document.getElementById('afScanRow');
+  const supportsManualFocus = caps.focusMode && caps.focusMode.includes('manual') && caps.focusDistance && caps.focusDistance.min!==undefined;
+  if(supportsManualFocus){
+    focusRow.style.display='flex';
+    afScanRow.style.display='flex';
+    focusSlider.min=caps.focusDistance.min; focusSlider.max=caps.focusDistance.max; focusSlider.step=caps.focusDistance.step||0.01;
+    focusSlider.value=caps.focusDistance.min;
+    focusSlider.oninput=async()=>{
+      document.getElementById('focusVal').textContent=parseFloat(focusSlider.value).toFixed(2);
+      try{ await track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:parseFloat(focusSlider.value)}]}); }
+      catch(e){ document.getElementById('focusVal').textContent='viga'; }
+    };
+  }else{
+    focusRow.style.display='none'; afScanRow.style.display='none';
+  }
+}
+
+// "bracket scan" — läbib mitu fookuskaugust ja proovib igal peatusel koodi lugeda,
+// kuni üks õnnestub. Emuleerib autofookust seadmel, mis ei paljasta 'continuous' režiimi.
+document.getElementById('btnAfScan').addEventListener('click', afScan);
+async function afScan(){
+  if(!track || !track.getCapabilities) return;
+  const caps=track.getCapabilities();
+  if(!caps.focusDistance) return;
+  const {min,max}=caps.focusDistance;
+  const steps=10;
+  const statusEl=document.getElementById('afScanStatus');
+  const btn=document.getElementById('btnAfScan');
+  btn.disabled=true;
+  for(let i=0;i<=steps;i++){
+    const dist = min + (max-min)*(i/steps);
+    statusEl.textContent = `proovin ${dist.toFixed(2)} (${i+1}/${steps+1})…`;
+    try{ await track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:dist}]}); }catch(e){}
+    await sleep(260);  // anna läätsele aega liikuda ja sensorile särituseks
+    const hit = await tryDecodeOnce();
+    if(hit){
+      statusEl.textContent = `✓ leitud fookuskaugusel ${dist.toFixed(2)}`;
+      document.getElementById('focusSlider').value = dist;
+      document.getElementById('focusVal').textContent = dist.toFixed(2);
+      btn.disabled=false;
+      return;
+    }
+  }
+  statusEl.textContent = 'koodi ei leitud üheski fookuspunktis — proovi lähemale/kaugemale astuda';
+  btn.disabled=false;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// üks kiire dekodeerimiskatse aktiivse mootoriga (kasutab bracket-scan'i sees)
+async function tryDecodeOnce(){
+  try{
+    const canvas=document.createElement('canvas');
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    if(!canvas.width) return false;
+    canvas.getContext('2d').drawImage(video,0,0);
+    if(activeEngine==='native' && 'BarcodeDetector' in window){
+      if(!nativeDetector) nativeDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']});
+      const codes=await nativeDetector.detect(canvas);
+      if(codes&&codes.length){ stats.hits++; logLine('native (AF-scan)', codes[0].rawValue, 0); updateStats(); return true; }
+    }else if(activeEngine==='zxing' && typeof ZXingBrowser!=='undefined'){
+      if(!zxingReader) zxingReader=new ZXingBrowser.BrowserMultiFormatReader();
+      try{
+        const res=await zxingReader.decodeFromCanvas(canvas);
+        if(res){ stats.hits++; logLine('zxing (AF-scan)', res.getText(), 0); updateStats(); return true; }
+      }catch(e){}
+    }else if(activeEngine==='zbar' && typeof zbarWasm!=='undefined'){
+      const imgData=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height);
+      const symbols=await zbarWasm.scanImageData(imgData);
+      if(symbols&&symbols.length){ stats.hits++; logLine('zbar (AF-scan)', symbols[0].decode(), 0); updateStats(); return true; }
+    }
+  }catch(e){}
+  return false;
 }
 
 /* ---------- continuous detection loops ---------- */
