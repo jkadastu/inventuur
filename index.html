@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Inventuur — skanneri terminal (v1.0.1)</title>
+<title>Inventuur — skanneri terminal</title>
 <style>
 :root{
   --bg:#16181A; --panel:#1F2225; --panel2:#272B2F; --line:#343A40;
@@ -124,7 +124,7 @@ td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
 <div class="wrap">
 
 <header>
-  <div><h1>Inventuur — skanneri terminal (v1.0.1)</h1>
+  <div><h1>Inventuur — skanneri terminal</h1>
   <div class="sub">Bluetooth HID skanner · asukohapõhine lugemine</div></div>
   <div class="save-ind" id="saveInd">—</div>
 </header>
@@ -200,7 +200,10 @@ td.loc input:focus{border-color:var(--accent);background:var(--bg);outline:none}
     <div class="msg" id="camMsg">Käivitan kaamera…</div>
     <button class="camClose" id="camClose">✕</button>
   </div>
-  <div class="camBottom"><div class="hint">Puuduta ekraani koodi kohal, kui fookus hägune · hoia telefon paigal</div></div>
+  <div class="camBottom">
+    <button id="btnManualCap" class="sec" style="margin-bottom:8px">📸 Tee foto kohe</button>
+    <div class="hint">Puuduta ekraani koodi kohal, kui fookus hägune · hoia telefon paigal</div>
+  </div>
 </div>
 
 <script>
@@ -323,12 +326,36 @@ document.addEventListener('click',e=>{if(!e.target.closest('input,button,.res,.d
 function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
 
 /* ---------- camera scanning (phone) ---------- */
-let camStream=null, camDetector=null, camActive=false;
+let camStream=null, camDetector=null, camActive=false, imageCapture=null, camLoopTimer=null;
 const camSupported = 'BarcodeDetector' in window && !!navigator.mediaDevices;
 document.getElementById('btnCam').style.display = camSupported ? '' : 'none';
 
 document.getElementById('btnCam').addEventListener('click', openCamera);
 document.getElementById('camClose').addEventListener('click', closeCamera);
+document.getElementById('btnManualCap').addEventListener('click', manualCapture);
+
+async function manualCapture(){
+  if(!camActive) return;
+  if(camLoopTimer){ clearTimeout(camLoopTimer); camLoopTimer=null; }
+  const msg=document.getElementById('camMsg');
+  msg.textContent='Pildistan…';
+  try{
+    let bitmap;
+    if(imageCapture){
+      const blob = await imageCapture.takePhoto();
+      bitmap = await createImageBitmap(blob);
+    }else{
+      bitmap = await createImageBitmap(document.getElementById('camVideo'));
+    }
+    const codes = await camDetector.detect(bitmap);
+    bitmap.close && bitmap.close();
+    if(codes && codes.length){ onCameraDetect(codes[0].rawValue); return; }
+    msg.textContent='Koodi ei leitud — proovi uuesti';
+  }catch(err){ msg.textContent='Pildistamine ebaõnnestus: '+err.message; }
+  if(camActive){
+    if(imageCapture) camLoopTimer=setTimeout(photoLoop,450); else detectLoop();
+  }
+}
 
 async function openCamera(){
   const modal=document.getElementById('camModal'), msg=document.getElementById('camMsg');
@@ -346,13 +373,41 @@ async function openCamera(){
   video.srcObject=camStream;
   try{ await video.play(); }catch(e){}
   await forceContinuousAF();
+
+  const track = camStream.getVideoTracks()[0];
+  imageCapture = null;
+  if('ImageCapture' in window){
+    try{ imageCapture = new ImageCapture(track); }catch(e){ imageCapture=null; }
+  }
+
   if(!camDetector){
     try{ camDetector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','itf','qr_code']}); }
     catch(e){ msg.textContent='Kaamera triipkoodilugemine pole selles brauseris toetatud.'; return; }
   }
-  msg.textContent='Suuna kaamera triipkoodile…';
   camActive=true;
-  detectLoop();
+  if(imageCapture){
+    msg.textContent='Suuna kaamera triipkoodile… (fototäpne režiim)';
+    photoLoop();
+  }else{
+    msg.textContent='Suuna kaamera triipkoodile…';
+    detectLoop();  // varuvariant seadmetele, mis ImageCapture't ei toeta
+  }
+}
+
+// peamine režiim: kasutab sama foto-torustikku, mida native kaamera-äpp kasutab —
+// annab kiirema/täpsema autofookuse kui pidev video-eelvaade
+async function photoLoop(){
+  if(!camActive) return;
+  try{
+    const blob = await imageCapture.takePhoto();
+    const bitmap = await createImageBitmap(blob);
+    if(camActive){
+      const codes = await camDetector.detect(bitmap);
+      if(codes && codes.length){ onCameraDetect(codes[0].rawValue); return; }
+    }
+    bitmap.close && bitmap.close();
+  }catch(err){ /* kaamera hõivatud fookuse ajal — proovime uuesti */ }
+  if(camActive) camLoopTimer = setTimeout(photoLoop, 450);
 }
 
 // sunni sisse pidev autofookus (enamik "ei fokuseeri" probleeme tuleb sellest,
@@ -423,7 +478,9 @@ function onCameraDetect(val){
 
 function closeCamera(){
   camActive=false;
+  if(camLoopTimer){ clearTimeout(camLoopTimer); camLoopTimer=null; }
   if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  imageCapture=null;
   document.getElementById('camModal').classList.remove('show');
 }
 
