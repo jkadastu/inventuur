@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#103D82">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Inventuur 10.2-G</title>
+<title>Inventuur 10.3-G</title>
 <style>
 :root{
   --bg:#F6F7F8; --panel:#FFFFFF; --panel2:#EEF3F7; --line:#D8DEE6;
@@ -186,12 +186,37 @@ body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:
   .compactStatus{grid-template-columns:auto 1fr auto auto!important}
   .compactStatus button{padding:6px 8px!important}
 }
+
+/* v10.3-G requested reading and list refinements */
+.locationCurrent{display:grid!important;grid-template-columns:auto minmax(0,1fr) 168px!important;align-items:center!important;gap:8px!important}
+.locationModes{width:168px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin:0!important}
+.locationMode{width:100%!important;height:38px!important;min-height:38px!important;padding:6px 8px!important;background:#00A6FF!important;color:#fff!important;border:1px solid #00A6FF!important;font-size:12px!important;font-weight:800!important}
+.locationMode:hover{filter:brightness(1.06)}
+.meta{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important;flex-wrap:nowrap!important;margin-bottom:12px!important;color:var(--dim)!important}
+.meta .metricBox{min-width:0;background:#F7F9FB;border:1px solid #D4DDE7;border-radius:7px;padding:8px 7px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+.meta .metricBox>span{font-size:10px!important;line-height:1.15;color:var(--dim)!important;white-space:nowrap}
+.meta .metricBox>b{display:block!important;margin:0!important;font-size:17px!important;line-height:1.1;color:var(--text)!important;font-family:var(--mono)!important;overflow-wrap:anywhere}
+.meta .metricValue{display:flex;align-items:center;justify-content:center;gap:5px;min-height:19px}
+.meta .differenceMetric b.over{color:#4F7212!important}.meta .differenceMetric b.under{color:#B42318!important}.meta .differenceMetric b.match{color:#4F7212!important}
+.negativeDot{display:none;width:8px;height:8px;border-radius:50%;background:#D92D20;flex:0 0 8px}.negativeDot.show{display:inline-block}
+.quantityArea{width:100%;text-align:center}
+.quantityArea .qtyrow{display:flex!important;width:100%!important;justify-content:center!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important}
+.quantityArea .qtyrow .step{width:64px!important;min-width:64px!important;height:48px!important}
+.quantityArea .qtyrow #qtyIn{width:100px!important;min-width:100px!important;height:48px!important;flex:0 0 100px!important}
+.quantityActions{width:100%!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:10px!important}
+.quantityActions button{width:100%!important;height:48px!important;min-height:48px!important}
+.quantityActions .cancelScanBtn{grid-column:1!important}.quantityActions .nextScanBtn{grid-column:2!important}
+.newArticleBadge{background:#F59E0B!important;color:#111827!important;border:1px solid #D97706!important;font-weight:900!important;text-transform:uppercase;letter-spacing:.25px}
+.pill.pending{background:#D9F0FF!important;color:#075985!important}
+.exportFilterRow{cursor:pointer;transition:background .15s,transform .05s}.exportFilterRow:hover{background:#EEF7FF}.exportFilterRow:focus{outline:3px solid #00A6FF;outline-offset:1px}
+@media(max-width:700px){.locationCurrent{grid-template-columns:auto minmax(0,1fr) 150px!important}.locationModes{width:150px!important}}
+@media(max-width:560px){.locationCurrent{grid-template-columns:minmax(0,1fr) 150px!important;grid-template-rows:auto auto!important;align-items:center!important}.locationCurrent span{grid-column:1;grid-row:1}.locationCurrent strong{grid-column:1;grid-row:2}.locationModes{grid-column:2;grid-row:1 / span 2;width:150px!important}.locationMode{height:38px!important;min-height:38px!important}.meta{gap:5px!important}.meta .metricBox{padding:7px 3px}.meta .metricBox>span{font-size:9px!important}.meta .metricBox>b{font-size:15px!important}.quantityArea .qtyrow .step{width:60px!important;min-width:60px!important}.quantityArea .qtyrow #qtyIn{width:96px!important;min-width:96px!important;flex-basis:96px!important}}
 </style>
 </head>
-<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.2-G</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
+<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.3-G</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
 <section class="appPage" id="page-reading"><div class="inventoryFilterStats" role="group" aria-label="Nimekirja filter">
 <button type="button" class="inventoryFilterCard total active" id="filterAll" data-filter="all"><span class="filterLabel">Artikleid laos</span><strong id="countAll">0</strong></button>
-<button type="button" class="inventoryFilterCard counted" id="filterCounted" data-filter="counted"><span class="filterLabel">Loetud (uued)</span><strong id="countCounted">0</strong></button>
+<button type="button" class="inventoryFilterCard counted" id="filterCounted" data-filter="counted"><span class="filterLabel">Loetud  (Uus)</span><strong id="countCounted">0</strong></button>
 <button type="button" class="inventoryFilterCard unread" id="filterUnread" data-filter="unread"><span class="filterLabel">Lugemata</span><strong id="countUnread">0</strong></button>
 </div><div class="progress"><span id="progBar"></span></div><div class="listSearchArea"><div class="workAreaTitle">Otsi või kontrolli artiklit</div><div class="panel"><div class="scanrow"><input id="search" type="text" autocomplete="off" placeholder="Otsi artiklinumbri või nimetuse järgi"><button id="btnSearchCam" aria-label="Otsi kaameraga" title="Otsi kaameraga"><span class="barcodeIcon"></span></button></div><div class="results" id="results"></div></div></div><div id="sumbar" hidden></div><div class="readList" id="tblWrap"><div class="emptyState">Loetud artiklid ilmuvad siia.</div></div></section>
 <section class="appPage scanCompact active" id="page-scan"><div class="scanTitleRow"><h2>Lao lugemine</h2><label class="beepToggle globalSound"><input type="checkbox" id="beepEnabled" checked> Heli</label></div><div class="scanStatusLine">Inventuuri staatus: <strong id="scanInventoryStatus">Avatud</strong></div><section class="locationSection"><div class="workAreaTitle">Asukoha valimine</div><div class="locationCurrent"><span>Praegune asukoht</span><strong id="curLoc">— määramata —</strong><div class="locationModes"><button type="button" class="scanMode locationMode" id="btnLocationManual"><span>Käsitsi</span></button><button type="button" class="scanMode locationMode" id="btnLocationCamera"><span>Kaamera</span></button></div></div><div class="locationManual" id="locationManual" hidden><input id="locInput" type="text" placeholder="nt Riiul 2"><button id="btnSetLoc" class="enterBtn" aria-label="Kinnita asukoht" title="Kinnita asukoht">➜</button></div></section><div class="scanbox"><div class="scanLaunch"><div class="workAreaTitle">Artikli sisestamine</div><div class="scanModes"><button id="btnInputMode" class="scanMode manualMode"><svg class="modeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h.01M10 9h.01M13 9h.01M16 9h.01M7 12h.01M10 12h.01M13 12h.01M16 12h.01M8 15h8"/></svg><span>Käsitsi</span></button><button id="btnCam" class="scanMode cameraMode active"><svg class="modeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="10" y1="19.3" x2="14" y2="19.3"/><path d="M8 9V8a1 1 0 0 1 1-1h.6M15 9V8a1 1 0 0 0-1-1h-.6M8 14.5v1a1 1 0 0 0 1 1h.6M15 14.5v1a1 1 0 0 1-1 1h-.6"/><g stroke-width="1.2"><line x1="9.2" y1="10" x2="9.2" y2="14"/><line x1="10.4" y1="10" x2="10.4" y2="14"/><line x1="11.4" y1="10" x2="11.4" y2="14"/><line x1="12.6" y1="10" x2="12.6" y2="14"/><line x1="13.8" y1="10" x2="13.8" y2="14"/></g></svg><span>Kaamera</span></button></div><div class="manualInputArea" id="manualInputArea" hidden><div class="inputAreaLabel">Artikli nr või EAN-kood</div><div class="scanInputRow"><input id="scan" type="text" inputmode="numeric" autocomplete="off" placeholder="Artikli nr või EAN-kood"><button id="btnManualSubmit" class="enterBtn" aria-label="Lisa artikkel" title="Lisa artikkel">➜</button></div></div><div class="scanSuggestions" id="scanSuggestions" role="listbox" aria-label="Sobivad laoseisu artiklid"></div></div><div class="card" id="card"></div></div></section>
@@ -439,15 +464,16 @@ function openEntry(id,raw){
     <div class="meta">
       <div>Asukoht<b style="color:var(--blue)">${esc(e.loc||'—')}</b></div>
       <div class="stockSensitive">Ladu<b>${sq(p)}</b></div>
-      <div>Kokku loetud<b id="cvTot">${tot===null?'−':tot}</b></div>
-      <div class="differenceSensitive">Vahe<b id="cvDiff">—</b></div>
-      <div class="metaCurrent">Selles asukohas<b id="cvView">${e.qty===null?'−':e.qty}</b></div>
+      <div class="metricBox"><span>Ladu</span><b class="stockSensitive">${sq(p)}</b></div>
+      <div class="metricBox"><span>Loetud</span><b id="cvTot">${tot===null?'−':tot}</b></div>
+      <div class="metricBox differenceMetric"><span>Vahe</span><div class="metricValue"><b class="differenceSensitive" id="cvDiff">—</b><i id="cvDiffDot" class="negativeDot" aria-label="Puudujääk"></i></div></div>
+      <div class="metricBox"><span>Selles asukohas</span><b id="cvView">${e.qty===null?'−':e.qty}</b></div>
     </div>
     <div class="quantityArea"><div class="workAreaTitle">Kogus</div><div class="qtyrow">
       <button class="step" onclick="bump(-1)">−</button>
       <input type="number" id="qtyIn" placeholder="−" value="${e.qty===null?'':e.qty}" step="1" class="${e.qty===null?'unset':''}">
       <button class="step" onclick="bump(1)">+</button>
-      <div class="quantityActions"><button class="cancelScanBtn" onclick="cancelCurrentEntry()">Tühista</button><button class="nextScanBtn" onclick="finishQuantityAndScan()"><span class="barcodeIcon"></span> Loe järgmine</button></div>
+      <div class="quantityActions"><button class="cancelScanBtn" onclick="cancelCurrentEntry()">Tühista</button><button class="nextScanBtn" onclick="finishQuantityAndScan()"><span class="barcodeIcon"></span> Järgmine</button></div>
     </div></div>`;
   const qi=document.getElementById('qtyIn');
   qi.addEventListener('input',()=>{
@@ -475,6 +501,8 @@ function refreshCard(){
   const t=document.getElementById('cvTot'); const tot=partTotal(e.part);
   if(t)t.textContent=tot===null?'−':tot;
   const d=document.getElementById('cvDiff');
+  const dot=document.getElementById('cvDiffDot');
+  if(dot)dot.classList.toggle('show',tot!==null&&(tot-sq(e.part))<0);
   if(d){
     if(tot===null){d.textContent='—';d.className='';}
     else{const diff=tot-sq(e.part);d.textContent=(diff>0?'+':'')+diff;d.className=diff>0?'over':diff<0?'under':'match';}
@@ -521,17 +549,17 @@ function render(){
   const newCountedSet=new Set([...allCountedSet].filter(p=>stock[p]===undefined));
   const unreadSet=new Set(activeParts.filter(p=>!countedInStockSet.has(p)));
   const total=activeParts.length,counted=allCountedSet.size,unread=unreadSet.size,newCount=newCountedSet.size,countedInStock=countedInStockSet.size;
-  let nq=0,pq=0,ns=0,ps=0;
-  activeParts.forEach(p=>{const t=partTotal(p);if(t===null)return;const d=t-sq(p),pr=prices[p]||0;if(d<0){nq+=-d;ns+=-d*pr}if(d>0){pq+=d;ps+=d*pr}});
   const allKnownParts=[...new Set([...activeParts,...allCountedSet])].sort((a,b)=>a.localeCompare(b));
-  const visibleParts=listFilter==='counted'?allKnownParts.filter(p=>allCountedSet.has(p)):listFilter==='unread'?activeParts.filter(p=>unreadSet.has(p)):activeParts;
+  let nq=0,pq=0,ns=0,ps=0;
+  allKnownParts.forEach(p=>{const t=partTotal(p);if(t===null)return;const d=t-sq(p),pr=prices[p]||0;if(d<0){nq+=-d;ns+=-d*pr}if(d>0){pq+=d;ps+=d*pr}});
+  const visibleParts=listFilter==='counted'?allKnownParts.filter(p=>allCountedSet.has(p)):listFilter==='unread'?activeParts.filter(p=>unreadSet.has(p)):allKnownParts;
   document.getElementById('tblWrap').innerHTML=visibleParts.map(p=>{
     const es=partEntries(p),t=partTotal(p),st=sq(p),isUnread=!allCountedSet.has(p),isNew=stock[p]===undefined,d=t===null?null:t-st;
     const cls=isUnread?'pending':d===0?'match':d>0?'over':'under';
-    const txt=isUnread?'Lugemata':isNew?'Uus artikkel':d===0?'Laoseisuga võrdne':`Vahe ${d>0?'+':''}${d}`;
+    const txt=isUnread?'Lugemata':isNew?'Uus artikkel':d===0?'Korras':`Erinevus ${d>0?'+':''}${d}`;
     const locations=es.length?es.map(e=>`${esc(e.loc||'Asukoht määramata')}: ${e.qty===null?'−':e.qty}`).join(' · '):'Pole veel loetud';
     const openAction=isUnread?`openArticleFromSearch('${encodeURIComponent(p)}')`:`openEditOverlay('${encodeURIComponent(p)}')`;
-    return `<article class="invCard ${isUnread?'unreadCard':''}" role="button" tabindex="0" onclick="${openAction}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${openAction}}"><div><div class="itemCode">${esc(p)}${isNew?'<span class="badge">uus</span>':''}</div><div class="itemName">${esc(names[p]||'Nimetus puudub')}</div><div class="itemPrice">${formatPrice(p)}</div></div><div class="itemNums"><b>${isUnread?'Lugemata':'Loetud '+t}</b><div class="stockSensitive">Ladu ${st}</div><span class="pill differenceSensitive ${cls}">${txt}</span></div><div class="itemLocations">${locations}</div></article>`;
+    return `<article class="invCard ${isUnread?'unreadCard':''}" role="button" tabindex="0" onclick="${openAction}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${openAction}}"><div><div class="itemCode">${esc(p)}${isNew?'<span class="badge newArticleBadge">UUS</span>':''}</div><div class="itemName">${esc(names[p]||'Nimetus puudub')}</div><div class="itemPrice">${formatPrice(p)}</div></div><div class="itemNums"><b>${isUnread?'Lugemata':'Loetud '+t}</b><div class="stockSensitive">Ladu ${st}</div><span class="pill ${isNew?'':'differenceSensitive'} ${isNew?'pending':cls}">${txt}</span></div><div class="itemLocations">${locations}</div></article>`;
   }).join('')||`<div class="emptyState">${listFilter==='counted'?'Loetud artikleid ei ole.':listFilter==='unread'?'Kõik laos olevad artiklid on loetud.':'Laos olevaid artikleid ei ole.'}</div>`;
   document.getElementById('countAll').textContent=total;
   document.getElementById('countCounted').textContent=`${counted} (${newCount})`;
@@ -551,8 +579,8 @@ function showExportDifferenceFilter(type){
   document.querySelectorAll('.exportFilterCard').forEach(card=>card.classList.toggle('active',card.dataset.exportFilter===type));
   const negative=type==='negative';
   document.getElementById('exportFilterTitle').textContent=negative?'Puudujäägiga artiklid':'Ülejäägiga artiklid';
-  const parts=activeStockParts().filter(p=>{const total=partTotal(p);if(total===null)return false;const diff=total-sq(p);return negative?diff<0:diff>0}).sort((a,b)=>a.localeCompare(b));
-  document.getElementById('exportFilteredList').innerHTML=parts.length?parts.map(p=>{const total=partTotal(p),warehouse=sq(p),diff=total-warehouse;return `<div class="exportFilterRow ${negative?'negative':'positive'}"><div><div class="part">${esc(p)}</div><div class="name">${esc(names[p]||'Nimetus puudub')}</div></div><div class="numbers">Loetud ${total} · Ladu ${warehouse}<b>${diff>0?'+':''}${diff}</b></div></div>`}).join(''):'<div class="exportFilterEmpty">Selles kategoorias artikleid ei ole.</div>';
+  const parts=[...new Set([...activeStockParts(),...entries.map(e=>e.part)])].filter(p=>{const total=partTotal(p);if(total===null)return false;const diff=total-sq(p);return negative?diff<0:diff>0}).sort((a,b)=>a.localeCompare(b));
+  document.getElementById('exportFilteredList').innerHTML=parts.length?parts.map(p=>{const total=partTotal(p),warehouse=sq(p),diff=total-warehouse;return `<div class="exportFilterRow ${negative?'negative':'positive'}" role="button" tabindex="0" onclick="openEditOverlay('${encodeURIComponent(p)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openEditOverlay('${encodeURIComponent(p)}')}"><div><div class="part">${esc(p)}</div><div class="name">${esc(names[p]||'Nimetus puudub')}</div></div><div class="numbers">Loetud ${total} · Ladu ${warehouse}<b>${diff>0?'+':''}${diff}</b></div></div>`}).join(''):'<div class="exportFilterEmpty">Selles kategoorias artikleid ei ole.</div>';
   document.getElementById('exportFilterPanel').hidden=false;
 }
 function closeExportDifferenceFilter(){exportDifferenceFilter=null;document.getElementById('exportFilterPanel').hidden=true;document.querySelectorAll('.exportFilterCard').forEach(card=>card.classList.remove('active'))}
@@ -570,7 +598,7 @@ function openEditOverlay(encodedPart){
   document.getElementById('editOverlay').classList.add('show');
 }
 function closeEditOverlay(){document.getElementById('editOverlay').classList.remove('show');editPart=null}
-function stepOverlayQty(id,delta){const row=document.querySelector(`.editLocationRow[data-id="${id}"]`);if(!row)return;const input=row.querySelector('input');input.value=Math.max(0,(Number(input.value)||0)+delta)}
+function stepOverlayQty(id,delta){const row=document.querySelector(`.editLocationRow[data-id="${id}"]`);if(!row)return;const input=row.querySelector('.qtyStepper input');if(!input)return;input.value=Math.max(0,(Number(input.value)||0)+delta)}
 function openArticleFromSearch(encodedPart){const p=decodeURIComponent(encodedPart);if(!partEntries(p).length)entries.push({id:seq++,part:p,loc:curLoc,qty:null});openEditOverlay(encodeURIComponent(p))}
 function removeOverlayRow(id){
   const row=document.querySelector(`.editLocationRow[data-id="${id}"]`);if(!row)return;
