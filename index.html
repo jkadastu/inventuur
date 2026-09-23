@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#103D82">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Inventuur 10.3-G-lo</title>
+<title>Inventuur 10.4</title>
 <style>
 :root{
   --bg:#F6F7F8; --panel:#FFFFFF; --panel2:#EEF3F7; --line:#D8DEE6;
@@ -187,7 +187,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:
   .compactStatus button{padding:6px 8px!important}
 }
 
-/* v10.3-G-lo requested reading and list refinements */
+/* v10.3-G requested reading and list refinements */
 .locationCurrent{display:grid!important;grid-template-columns:auto minmax(0,1fr) 168px!important;align-items:center!important;gap:8px!important}
 .locationModes{width:168px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin:0!important}
 .locationMode{width:100%!important;height:38px!important;min-height:38px!important;padding:6px 8px!important;background:#00A6FF!important;color:#fff!important;border:1px solid #00A6FF!important;font-size:12px!important;font-weight:800!important}
@@ -211,9 +211,24 @@ body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:
 .exportFilterRow{cursor:pointer;transition:background .15s,transform .05s}.exportFilterRow:hover{background:#EEF7FF}.exportFilterRow:focus{outline:3px solid #00A6FF;outline-offset:1px}
 @media(max-width:700px){.locationCurrent{grid-template-columns:auto minmax(0,1fr) 150px!important}.locationModes{width:150px!important}}
 @media(max-width:560px){.locationCurrent{grid-template-columns:minmax(0,1fr) 150px!important;grid-template-rows:auto auto!important;align-items:center!important}.locationCurrent span{grid-column:1;grid-row:1}.locationCurrent strong{grid-column:1;grid-row:2}.locationModes{grid-column:2;grid-row:1 / span 2;width:150px!important}.locationMode{height:38px!important;min-height:38px!important}.meta{gap:5px!important}.meta .metricBox{padding:7px 3px}.meta .metricBox>span{font-size:9px!important}.meta .metricBox>b{font-size:15px!important}.quantityArea .qtyrow .step{width:60px!important;min-width:60px!important}.quantityArea .qtyrow #qtyIn{width:96px!important;min-width:96px!important;flex-basis:96px!important}}
+
+/* v10.4 reading card layout and status indicators */
+.card .name.statusName{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.articleStatusIndicator{display:inline-block;width:11px;height:11px;border-radius:50%;flex:0 0 11px;background:#98A2B3;box-shadow:0 0 0 2px #fff,0 0 0 3px #D0D5DD}
+.articleStatusIndicator.ok{background:#16A34A;box-shadow:0 0 0 2px #fff,0 0 0 3px #86D39E}
+.articleStatusIndicator.problem{background:#D92D20;box-shadow:0 0 0 2px #fff,0 0 0 3px #F3A6A0}
+.meta .locationMetric{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:baseline;padding:0 2px;text-align:left}
+.meta .locationMetric span{font-size:10px;color:var(--dim);font-weight:700}
+.meta .locationMetric b{font-size:14px!important;color:var(--blue)!important;overflow-wrap:anywhere;text-align:left}
+.meta.metricsVisible{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.meta.metricsHidden{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.quantityArea .qtyrow{display:flex!important;justify-content:center!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important}
+.quantityArea .quantityActions{display:grid!important;grid-template-columns:1fr 1.35fr!important;gap:8px!important;width:100%!important;margin-top:10px!important}
+@media(max-width:560px){.meta.metricsVisible{grid-template-columns:repeat(4,minmax(0,1fr))!important}.meta.metricsHidden{grid-template-columns:repeat(2,minmax(0,1fr))!important}.meta .metricBox{padding:7px 3px!important}.meta .metricBox>span{white-space:normal!important;line-height:1.05!important}}
+
 </style>
 </head>
-<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.3-G-lo</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
+<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.4</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
 <section class="appPage" id="page-reading"><div class="inventoryFilterStats" role="group" aria-label="Nimekirja filter">
 <button type="button" class="inventoryFilterCard total active" id="filterAll" data-filter="all"><span class="filterLabel">Artikleid laos</span><strong id="countAll">0</strong></button>
 <button type="button" class="inventoryFilterCard counted" id="filterCounted" data-filter="counted"><span class="filterLabel">Loetud  (Uus)</span><strong id="countCounted">0</strong></button>
@@ -372,7 +387,7 @@ scanEl.focus();
 document.addEventListener('click',e=>{if(!e.target.closest('.scanLaunch'))document.getElementById('scanSuggestions').className='scanSuggestions';if(!e.target.closest('input,button,.res,.drop'))setTimeout(()=>scanEl.focus(),40)});
 function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
 
-let audioCtx=null;function scanFeedback(){if(navigator.vibrate)navigator.vibrate([110,35,80]);if(document.getElementById('beepEnabled').checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;o.type='sine';o.frequency.setValueAtTime(750,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.10,t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+.16);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.17)}catch(e){}}document.querySelector('.scanbox').classList.remove('feedbackFlash');requestAnimationFrame(()=>document.querySelector('.scanbox').classList.add('feedbackFlash'))}
+let audioCtx=null;function scanFeedback(){if(navigator.vibrate)navigator.vibrate([110,35,80]);if(document.getElementById('beepEnabled').checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;o.type='square';o.frequency.setValueAtTime(1500,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.20);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.21)}catch(e){}}document.querySelector('.scanbox').classList.remove('feedbackFlash');requestAnimationFrame(()=>document.querySelector('.scanbox').classList.add('feedbackFlash'))}
 /* ---------- camera scanning ---------- */
 let camStream=null,camDetector=null,camActive=false,camTrack=null,camCaps={},torchOn=false,camTarget='scan',barcodeEngine='none',zxingReader=null,zxingRotatedReader=null,zxingControls=null,zxingRotateTimer=null;
 const camSupported=!!navigator.mediaDevices;
@@ -454,27 +469,25 @@ function openEntry(id,raw){
   card.className='card show'+(known?'':' unknown');
   card.innerHTML=`
     <div class="code">${esc(p)}${viaEan?`<span class="badge">EAN ${esc(raw)}</span>`:''}${known?'':'<span class="badge" style="color:var(--warn)">hinnakirjas puudub</span>'}</div>
-    <div class="name">${esc(names[p]||'— nimetus puudub —')}</div>
+    <div class="name statusName">${esc(names[p]||'— nimetus puudub —')}<span id="articleStatusIndicator" class="articleStatusIndicator pending" role="img" aria-label="Kogus sisestamata"></span></div>
     <div class="scanPrice">Hind: <b>${formatPrice(p)}</b></div>
     ${others.length?`<div class="dupwarn">
        <div class="h">⚠ Duplikaat — artikkel on loetud ${partEntries(p).length} asukohas:</div>
        ${partEntries(p).map(o=>`<div class="l dupRow"><span class="dupLoc">${esc(o.loc||'(asukohata)')}${o.id===id?' (praegune)':''}</span><span class="dupQty">${o.qty===null?'<span>kogus sisestamata</span>':o.qty+' tk'}</span></div>`).join('')}
        <div style="margin-top:4px">Ekspordis liidetakse kogused automaatselt kokku.</div>
      </div>`:''}
-    <div class="meta">
-      <div>Asukoht<b style="color:var(--blue)">${esc(e.loc||'—')}</b></div>
-      <div class="stockSensitive">Ladu<b>${sq(p)}</b></div>
-      <div class="metricBox"><span>Ladu</span><b class="stockSensitive">${sq(p)}</b></div>
+    <div class="meta ${canShowDifferences()?'metricsVisible':'metricsHidden'}">
+      <div class="locationMetric"><span>Asukoht</span><b>${esc(e.loc||'—')}</b></div>
+      <div class="metricBox stockSensitive"><span>Ladu</span><b>${sq(p)}</b></div>
       <div class="metricBox"><span>Loetud</span><b id="cvTot">${tot===null?'−':tot}</b></div>
-      <div class="metricBox differenceMetric"><span>Vahe</span><div class="metricValue"><b class="differenceSensitive" id="cvDiff">—</b><i id="cvDiffDot" class="negativeDot" aria-label="Puudujääk"></i></div></div>
+      <div class="metricBox differenceMetric differenceSensitive"><span>Vahe</span><div class="metricValue"><b id="cvDiff">—</b></div></div>
       <div class="metricBox"><span>Selles asukohas</span><b id="cvView">${e.qty===null?'−':e.qty}</b></div>
     </div>
     <div class="quantityArea"><div class="workAreaTitle">Kogus</div><div class="qtyrow">
       <button class="step" onclick="bump(-1)">−</button>
       <input type="number" id="qtyIn" placeholder="−" value="${e.qty===null?'':e.qty}" step="1" class="${e.qty===null?'unset':''}">
       <button class="step" onclick="bump(1)">+</button>
-      <div class="quantityActions"><button class="cancelScanBtn" onclick="cancelCurrentEntry()">Tühista</button><button class="nextScanBtn" onclick="finishQuantityAndScan()"><span class="barcodeIcon"></span> Järgmine</button></div>
-    </div></div>`;
+    </div><div class="quantityActions"><button class="cancelScanBtn" onclick="cancelCurrentEntry()">Tühista</button><button class="nextScanBtn" onclick="finishQuantityAndScan()"><span class="barcodeIcon"></span> Järgmine</button></div></div>`;
   const qi=document.getElementById('qtyIn');
   qi.addEventListener('input',()=>{
     const v=qi.value.trim();
@@ -501,11 +514,19 @@ function refreshCard(){
   const t=document.getElementById('cvTot'); const tot=partTotal(e.part);
   if(t)t.textContent=tot===null?'−':tot;
   const d=document.getElementById('cvDiff');
-  const dot=document.getElementById('cvDiffDot');
-  if(dot)dot.classList.toggle('show',tot!==null&&(tot-sq(e.part))<0);
+  const indicator=document.getElementById('articleStatusIndicator');
+  const meta=document.querySelector('#card .meta');
+  const reveal=canShowDifferences();
+  if(meta){meta.classList.toggle('metricsVisible',reveal);meta.classList.toggle('metricsHidden',!reveal);}
   if(d){
     if(tot===null){d.textContent='—';d.className='';}
     else{const diff=tot-sq(e.part);d.textContent=(diff>0?'+':'')+diff;d.className=diff>0?'over':diff<0?'under':'match';}
+  }
+  if(indicator){
+    const pending=tot===null,diff=pending?null:tot-sq(e.part);
+    indicator.className='articleStatusIndicator '+(pending?'pending':diff===0?'ok':'problem');
+    indicator.setAttribute('aria-label',pending?'Kogus sisestamata':diff===0?'Artikkel korras':'Artikliga on probleem');
+    indicator.title=pending?'Kogus sisestamata':diff===0?'Artikkel korras':'Artikliga on probleem';
   }
 }
 
@@ -631,7 +652,7 @@ document.getElementById('editNotes').onclick=openNotesOverlay;document.getElemen
 function noteExportText(p){const d=comments[p]||{},labels={arve:'Arve',lk:'LK',qm:'QM',scrap:'Scrap',muu:'Muu'};return Object.keys(labels).filter(k=>d[k]?.checked||d[k]?.qty||d[k]?.comment).map(k=>`${labels[k]} ${d[k]?.qty||''} tk ${d[k]?.comment||''}`.trim()).join(' | ')}
 function inventoryFileName(){const manager=safeFilePart(document.getElementById('warehouseManager').value),date=document.getElementById('sdate').value||localDateValue();return `Inventuur${manager?' '+manager:''} ${date}.csv`}
 function updateInventoryStatus(){const finished=inventoryStatus==='finished',label=finished?'Lõpetatud':'Avatud';['scanInventoryStatus','exportInventoryStatus'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=label;el.classList.toggle('finished',finished)}});const btn=document.getElementById('btnFinishInventory');if(btn)btn.textContent=finished?'Jätka':'Lõpeta';const toggle=document.getElementById('showDifferencesToggle');if(toggle)toggle.checked=showDifferencesOverride;const summary=document.getElementById('dataSummary');if(summary)summary.innerHTML=`<div><span>Kuupäev</span><strong>${esc(document.getElementById('sdate').value||'—')}</strong></div><div><span>Läbiviimise koht</span><strong>${esc(document.getElementById('inventoryPlace').value||'—')}</strong></div><div><span>Lao vastutav</span><strong>${esc(document.getElementById('warehouseManager').value||'—')}</strong></div><div><span>Inventeerija</span><strong>${esc(document.getElementById('tech').value||'—')}</strong></div>`;render()}
-function buildState(){return {version:'10.1',inventoryStatus,showDifferencesOverride,suppressDifferenceWarning,comments,warehouseManager:document.getElementById('warehouseManager').value,tech:document.getElementById('tech').value,inventoryPlace:document.getElementById('inventoryPlace').value,date:document.getElementById('sdate').value,names,prices,stock,eanMap,entries,curLoc,seq,ts:Date.now()}}
+function buildState(){return {version:'10.4',inventoryStatus,showDifferencesOverride,suppressDifferenceWarning,comments,warehouseManager:document.getElementById('warehouseManager').value,tech:document.getElementById('tech').value,inventoryPlace:document.getElementById('inventoryPlace').value,date:document.getElementById('sdate').value,names,prices,stock,eanMap,entries,curLoc,seq,ts:Date.now()}}
 function applyState(state){if(!state)return;inventoryStatus=(state.inventoryStatus==='finished'?'finished':'open');showDifferencesOverride=!!state.showDifferencesOverride;suppressDifferenceWarning=!!state.suppressDifferenceWarning;comments=state.comments||{};names=state.names||{};prices=state.prices||{};stock=state.stock||{};eanMap=state.eanMap||{};entries=state.entries||[];curLoc=state.curLoc||'';seq=state.seq||(entries.reduce((a,e)=>Math.max(a,e.id),0)+1);document.getElementById('warehouseManager').value=state.warehouseManager||'';document.getElementById('inventoryPlace').value=state.inventoryPlace||'';document.getElementById('tech').value=state.tech||'';document.getElementById('sdate').value=state.date||localDateValue();document.getElementById('curLoc').textContent=curLoc||'— määramata —';if(Object.keys(names).length){document.getElementById('dropPrice').classList.add('loaded');document.getElementById('stPrice').textContent=`leitud: ${Object.keys(names).length} nimetust, ${Object.keys(eanMap).length} EAN`}if(Object.keys(stock).length){document.getElementById('dropStock').classList.add('loaded');document.getElementById('stStock').textContent=`leitud: ${activeStockParts().length} laoseisuga artiklit`}rebuildIndex();render();updateInventoryStatus()}
 function openDatabase(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('IndexedDB pole toetatud'));return}const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE_NAME))d.createObjectStore(STORE_NAME)};req.onsuccess=()=>{db=req.result;db.onversionchange=()=>db.close();resolve(db)};req.onerror=()=>reject(req.error)})}
 function dbPut(key,value){return new Promise((resolve,reject)=>{if(!db){reject(new Error('Andmebaas pole avatud'));return}const tx=db.transaction(STORE_NAME,'readwrite');tx.objectStore(STORE_NAME).put(value,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
@@ -644,7 +665,7 @@ function countedArticleCount(){return new Set(entries.filter(e=>e.qty!==null).ma
 function createAutoJsonBackup(){
   const count=countedArticleCount(),milestone=Math.floor(count/40)*40;
   if(milestone<40||milestone<=lastAutoBackupMilestone)return;
-  const snapshot={version:'10.1',inventoryStatus,showDifferencesOverride,suppressDifferenceWarning,comments,autoBackup:true,createdAt:new Date().toISOString(),warehouseManager:document.getElementById('warehouseManager').value,tech:document.getElementById('tech').value,inventoryPlace:document.getElementById('inventoryPlace').value,date:document.getElementById('sdate').value,names,prices,stock,eanMap,entries,curLoc,seq};
+  const snapshot={version:'10.4',inventoryStatus,showDifferencesOverride,suppressDifferenceWarning,comments,autoBackup:true,createdAt:new Date().toISOString(),warehouseManager:document.getElementById('warehouseManager').value,tech:document.getElementById('tech').value,inventoryPlace:document.getElementById('inventoryPlace').value,date:document.getElementById('sdate').value,names,prices,stock,eanMap,entries,curLoc,seq};
   try{localStorage.setItem(AUTO_BACKUP_KEY,JSON.stringify(snapshot));if(db)dbPut('checkpoint',snapshot).catch(()=>{});lastAutoBackupMilestone=milestone;const el=document.getElementById('autoBackupStatus');if(el)el.textContent=`Automaatne JSON-varukoopia: ${milestone} artiklit · ${new Date().toLocaleTimeString('et-EE')}`;}catch(e){}
 }
 /* ---------- autosave ---------- */
