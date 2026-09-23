@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#103D82">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Inventuur 10.3-G</title>
+<title>Inventuur 10.3-G-lo</title>
 <style>
 :root{
   --bg:#F6F7F8; --panel:#FFFFFF; --panel2:#EEF3F7; --line:#D8DEE6;
@@ -187,7 +187,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:
   .compactStatus button{padding:6px 8px!important}
 }
 
-/* v10.3-G requested reading and list refinements */
+/* v10.3-G-lo requested reading and list refinements */
 .locationCurrent{display:grid!important;grid-template-columns:auto minmax(0,1fr) 168px!important;align-items:center!important;gap:8px!important}
 .locationModes{width:168px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin:0!important}
 .locationMode{width:100%!important;height:38px!important;min-height:38px!important;padding:6px 8px!important;background:#00A6FF!important;color:#fff!important;border:1px solid #00A6FF!important;font-size:12px!important;font-weight:800!important}
@@ -213,7 +213,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:78px}.wrap{max-width:
 @media(max-width:560px){.locationCurrent{grid-template-columns:minmax(0,1fr) 150px!important;grid-template-rows:auto auto!important;align-items:center!important}.locationCurrent span{grid-column:1;grid-row:1}.locationCurrent strong{grid-column:1;grid-row:2}.locationModes{grid-column:2;grid-row:1 / span 2;width:150px!important}.locationMode{height:38px!important;min-height:38px!important}.meta{gap:5px!important}.meta .metricBox{padding:7px 3px}.meta .metricBox>span{font-size:9px!important}.meta .metricBox>b{font-size:15px!important}.quantityArea .qtyrow .step{width:60px!important;min-width:60px!important}.quantityArea .qtyrow #qtyIn{width:96px!important;min-width:96px!important;flex-basis:96px!important}}
 </style>
 </head>
-<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.3-G</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
+<body><header class="appHeader"><div><div class="appTitle">Inventuur</div><div class="appVersion">app version 10.3-G-lo</div></div><div class="headerRight"><div class="headerCounter"><div><span id="headerCounted">0</span>/<span id="headerUnread">0</span></div><div class="headerProgressLabel">Edenemine</div></div><div class="save-ind" id="saveInd">—</div></div></header><div class="headerProgress"><span id="headerProgressBar"></span></div><div class="wrap">
 <section class="appPage" id="page-reading"><div class="inventoryFilterStats" role="group" aria-label="Nimekirja filter">
 <button type="button" class="inventoryFilterCard total active" id="filterAll" data-filter="all"><span class="filterLabel">Artikleid laos</span><strong id="countAll">0</strong></button>
 <button type="button" class="inventoryFilterCard counted" id="filterCounted" data-filter="counted"><span class="filterLabel">Loetud  (Uus)</span><strong id="countCounted">0</strong></button>
@@ -372,7 +372,7 @@ scanEl.focus();
 document.addEventListener('click',e=>{if(!e.target.closest('.scanLaunch'))document.getElementById('scanSuggestions').className='scanSuggestions';if(!e.target.closest('input,button,.res,.drop'))setTimeout(()=>scanEl.focus(),40)});
 function resolve(c){ if(names[c]!==undefined||stock[c]!==undefined)return c; if(eanMap[c])return eanMap[c]; return c; }
 
-let audioCtx=null;function scanFeedback(){if(navigator.vibrate)navigator.vibrate([110,35,80]);if(document.getElementById('beepEnabled').checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;o.type='square';o.frequency.setValueAtTime(1500,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.20);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.21)}catch(e){}}document.querySelector('.scanbox').classList.remove('feedbackFlash');requestAnimationFrame(()=>document.querySelector('.scanbox').classList.add('feedbackFlash'))}
+let audioCtx=null;function scanFeedback(){if(navigator.vibrate)navigator.vibrate([110,35,80]);if(document.getElementById('beepEnabled').checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;o.type='sine';o.frequency.setValueAtTime(750,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.10,t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+.16);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.17)}catch(e){}}document.querySelector('.scanbox').classList.remove('feedbackFlash');requestAnimationFrame(()=>document.querySelector('.scanbox').classList.add('feedbackFlash'))}
 /* ---------- camera scanning ---------- */
 let camStream=null,camDetector=null,camActive=false,camTrack=null,camCaps={},torchOn=false,camTarget='scan',barcodeEngine='none',zxingReader=null,zxingRotatedReader=null,zxingControls=null,zxingRotateTimer=null;
 const camSupported=!!navigator.mediaDevices;
