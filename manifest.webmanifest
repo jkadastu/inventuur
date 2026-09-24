@@ -1,17 +1,1 @@
-{
-  "name":"Inventuur",
-  "short_name":"Inventuur",
-  "description":"Inventuuri lugemise rakendus",
-  "start_url":"./index.html",
-  "scope":"./",
-  "display":"standalone",
-  "background_color":"#F6F7F8",
-  "theme_color":"#103D82",
-  "lang":"et",
-  "icons":[
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
-    {"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
-  ]
-}
+{"name":"Inventuur","short_name":"Inventuur","description":"Inventuuri lugemise rakendus","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#F6F7F8","theme_color":"#103D82","lang":"et","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},{"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
