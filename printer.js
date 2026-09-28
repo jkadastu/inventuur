@@ -1,4 +1,4 @@
-/* InventuurAPP+Print 10.8.7: D110_M v4 printing from tested v0.2.1. */
+/* InventuurAPP+Print 10.8.8: D110_M v4 printing from tested v0.2.1. */
 'use strict';
 window.InventoryPrinter = (() => {
   const SERVICE = 'e7810a71-73ae-499d-8c15-faa9aef0c3f2';
@@ -8,7 +8,7 @@ window.InventoryPrinter = (() => {
   const $ = id => document.getElementById(id);
   let device = null, server = null, characteristic = null, pendingWait = null;
   let busy = false, connecting = false, firstPrintAfterConnect = true, lastError = '', feedback = '';
-  let phase = 'unconfigured', statusTimer = null;
+  let phase = 'unconfigured', statusTimer = null, lastPrintWasTest = false;
   function log(text) {
     const el = $('printerLog');
     if (el) { el.textContent += '[' + new Date().toLocaleTimeString('et-EE') + '] ' + text + '\n'; el.scrollTop = el.scrollHeight; }
@@ -34,7 +34,13 @@ window.InventoryPrinter = (() => {
     st.querySelector('.printerStatusText').textContent = feedback || descriptions[phase];
     $('printerConnect').disabled = busy || connecting || connected();
     $('printerDisconnect').disabled = busy || connecting || !connected();
-    $('printerTest').disabled = busy || connecting || !connected();
+    const test=$('printerTest');
+    test.disabled = busy || connecting;
+    test.dataset.printState = phase;
+    const testLabels={unconfigured:'Prindi test',remembered:'Prindi test',connecting:'Ühendan…',connected:'Prindi test',printing:'Prindin…',success:'Test prinditud',error:'Proovi uuesti'};
+    test.querySelector('.printerTestLabel').textContent=phase==='success'&&!lastPrintWasTest?'Prindi test':testLabels[phase];
+    test.title=feedback || descriptions[phase];
+    test.setAttribute('aria-label',testLabels[phase]+'. '+(feedback||descriptions[phase]));
     $('printerChoose').disabled = busy || connecting;
   }
   function message(text) { $('printerMessageText').textContent = text; $('printerMessage').hidden = false; }
@@ -352,8 +358,22 @@ window.InventoryPrinter = (() => {
       if (!ok) { message('Printeriga ei õnnestunud ühendust luua. '+lastError+' Ava printeri seaded või proovi uuesti.'); return; }
     }
     // Capture article before any async operation, so closing the modal cannot switch the target.
-    try { await printLabel(part,names[part]||'Nimetus puudub'); }
+    try { lastPrintWasTest=false; await printLabel(part,names[part]||'Nimetus puudub'); }
     catch(e) { message('Printimine ebaõnnestus: '+e.message); }
+  }
+  async function printTest(selectedDevicePromise=null) {
+    closeMessage();
+    if(!connected()) {
+      if(!remembered()&&!device&&!$('printerSelect').value) {
+        await chooseNewPrinter();
+        if(!connected()) { if(phase!=='error')message('Printerit ei valitud. Vali Bluetoothi printer ja proovi uuesti.'); return; }
+      } else {
+        await connectFromSettings(selectedDevicePromise);
+        if(!connected()) { message('Printeriga ei õnnestunud ühendust luua. '+(lastError||'Vali printer uuesti.') );return; }
+      }
+    }
+    try { lastPrintWasTest=true; await printLabel('1234567890123','Printeri test'); }
+    catch(e) { message('Testprint ebaõnnestus: '+e.message); }
   }
   function onEditOpen() { if (!busy && !connecting) setPhase(basePhase()); else render(); }
   function onEditClose() { render(); }
@@ -372,7 +392,12 @@ window.InventoryPrinter = (() => {
     });
     $('printerChoose').addEventListener('click', chooseNewPrinter);
     $('printerDisconnect').addEventListener('click', disconnect);
-    $('printerTest').addEventListener('click', async()=>{try { await printLabel('1234567890123','Printeri test'); }catch(e){message('Testprint ebaõnnestus: '+e.message);}});
+    $('printerTest').addEventListener('click',()=>{
+      if(busy||connecting)return;
+      // Request the chooser synchronously while the click has user activation.
+      const selection=!connected()&&remembered()?requestSavedPrinterOnClick():null;
+      printTest(selection);
+    });
     $('printerMessageClose').addEventListener('click',closeMessage);
     $('printerMessageSettings').addEventListener('click',settingsPage);
     $('printerMessage').addEventListener('click',e=>{if(e.target===$('printerMessage'))closeMessage();});
