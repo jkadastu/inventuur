@@ -1,7 +1,7 @@
 {
   "name": "Inventuur",
   "short_name": "Inventuur",
-  "description": "InventuurAPP+Print 10.8.5",
+  "description": "InventuurAPP+Print 10.8.6",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
