@@ -1,4 +1,4 @@
-/* InventuurAPP+Print 10.8.2: D110_M v4 printing from tested v0.2.1. */
+/* InventuurAPP+Print 10.8.5: D110_M v4 printing from tested v0.2.1. */
 'use strict';
 window.InventoryPrinter = (() => {
   const SERVICE = 'e7810a71-73ae-499d-8c15-faa9aef0c3f2';
