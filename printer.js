@@ -1,4 +1,4 @@
-/* InventuurAPP+Print 10.8.1: D110_M v4 printing from tested v0.2.1. */
+/* InventuurAPP+Print 10.8.2: D110_M v4 printing from tested v0.2.1. */
 'use strict';
 window.InventoryPrinter = (() => {
   const SERVICE = 'e7810a71-73ae-499d-8c15-faa9aef0c3f2';
@@ -24,7 +24,7 @@ window.InventoryPrinter = (() => {
     const btn = $('editPrint'), st = $('printerSettingsStatus');
     if (!btn || !st) return;
     const labels = {unconfigured:'Prindi', remembered:'Prindi', connecting:'Ühendan…', connected:'Prindi', printing:'Prindin…', success:'Prinditud', error:'Proovi uuesti'};
-    const descriptions = {unconfigured:'Printer pole seadistatud', remembered:'Printer on meeles, kuid ühendamata', connecting:'Ühendan printeriga…', connected:'Ühendatud: ' + (device?.name || 'Printer'), printing:'Prindin…', success:'Prinditud', error:'Printeri viga'};
+    const descriptions = {unconfigured:'Printer pole seadistatud', remembered:'Viimati kasutatud: ' + (remembered()?.deviceName || device?.name || 'Printer') + ' · ühendamata', connecting:'Ühendan printeriga…', connected:'Ühendatud: ' + (device?.name || 'Printer'), printing:'Prindin…', success:'Prinditud', error:'Printeri viga'};
     btn.dataset.printState = phase;
     btn.disabled = !article() || busy || connecting;
     btn.querySelector('.editPrintLabel').textContent = labels[phase];
@@ -141,6 +141,22 @@ window.InventoryPrinter = (() => {
     if ($('printerRemember').checked) { setSelected(d.id,d.name||'Printer'); saveSettings(); }
     setPhase('connected');
   }
+  // Start the browser chooser immediately from the user's click. Local storage only
+  // remembers the name/ID; it cannot recreate a BluetoothDevice after reload.
+  function requestSavedPrinterOnClick() {
+    const s=remembered();
+    if (!s || device || typeof navigator.bluetooth?.getDevices==='function') return null;
+    if (typeof navigator.bluetooth?.requestDevice!=='function')
+      return Promise.reject(new Error('Web Bluetooth pole selles brauseris saadaval.'));
+    const name=String(s.deviceName || '').trim();
+    const validName=name && !/^(Vali uus printer|Salvestatud printer|Printer)$/i.test(name);
+    const options=validName
+      ? {filters:[{name}],optionalServices:[SERVICE,0x1800,0x1801,0x180a,0x180f]}
+      : {acceptAllDevices:true,optionalServices:[SERVICE,0x1800,0x1801,0x180a,0x180f]};
+    log('Brauser ei toeta getDevices(): avan ' + (validName ? 'salvestatud nimega filtreeritud' : 'tavalise') + ' seadmevalija');
+    try { return navigator.bluetooth.requestDevice(options); }
+    catch(e) { return Promise.reject(e); }
+  }
   async function findRemembered() {
     const s=remembered();
     if (device && (!s || device.id===s.deviceId)) return device;
@@ -151,12 +167,12 @@ window.InventoryPrinter = (() => {
     if (!match) throw new Error('Salvestatud printeri luba puudub. Vali printer uuesti seadetes.');
     return match;
   }
-  async function connectRemembered() {
+  async function connectRemembered(selectedDevicePromise=null) {
     if (connected()) return true;
     if (connecting) return false;
     connecting=true; setPhase('connecting');
     try {
-      const d=await findRemembered();
+      const d=selectedDevicePromise ? await selectedDevicePromise : await findRemembered();
       if (!d) throw new Error('Printerit pole seadistatud.');
       await useDevice(d);
       return true;
@@ -189,12 +205,13 @@ window.InventoryPrinter = (() => {
       setPhase('error',lastError);
     } finally { connecting=false; render(); }
   }
-  async function connectFromSettings() {
+  async function connectFromSettings(selectedDevicePromise=null) {
     if (busy || connecting || connected()) return;
     if ($('printerSelect').value || remembered() || device) {
       // Explicit selection may differ from the remembered printer.
       const selected=$('printerSelect').value;
-      if (selected && selected!==device?.id && typeof navigator.bluetooth?.getDevices==='function') {
+      if (selectedDevicePromise) await connectRemembered(selectedDevicePromise);
+      else if (selected && selected!==device?.id && typeof navigator.bluetooth?.getDevices==='function') {
         connecting=true; setPhase('connecting');
         try {
           const list=await navigator.bluetooth.getDevices();
@@ -321,7 +338,7 @@ window.InventoryPrinter = (() => {
     } catch(e) { lastError=e.message; log('PRINT ERROR: '+lastError); setPhase('error',lastError); throw e; }
     finally { busy=false; render(); }
   }
-  async function printArticle() {
+  async function printArticle(selectedDevicePromise=null) {
     const part=article();
     if (!part || busy || connecting) return;
     closeMessage();
@@ -331,7 +348,7 @@ window.InventoryPrinter = (() => {
       return;
     }
     if (!connected()) {
-      const ok=await connectRemembered();
+      const ok=await connectRemembered(selectedDevicePromise);
       if (!ok) { message('Printeriga ei õnnestunud ühendust luua. '+lastError+' Ava printeri seaded või proovi uuesti.'); return; }
     }
     // Capture article before any async operation, so closing the modal cannot switch the target.
@@ -344,8 +361,15 @@ window.InventoryPrinter = (() => {
     restoreSettings();
     setPhase(basePhase());
     refreshDevices();
-    $('editPrint').addEventListener('click', e=>{e.preventDefault();e.stopPropagation();printArticle();});
-    $('printerConnect').addEventListener('click', connectFromSettings);
+    $('editPrint').addEventListener('click', e=>{e.preventDefault();e.stopPropagation();
+      const selection=!connected() && !busy && !connecting && article() ? requestSavedPrinterOnClick() : null;
+      printArticle(selection);
+    });
+    $('printerConnect').addEventListener('click', ()=>{
+      if (busy || connecting || connected()) return;
+      const selection=requestSavedPrinterOnClick();
+      connectFromSettings(selection);
+    });
     $('printerChoose').addEventListener('click', chooseNewPrinter);
     $('printerDisconnect').addEventListener('click', disconnect);
     $('printerTest').addEventListener('click', async()=>{try { await printLabel('1234567890123','Printeri test'); }catch(e){message('Testprint ebaõnnestus: '+e.message);}});
