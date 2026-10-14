@@ -1,4 +1,4 @@
-/* InventuurAPP+Print 0.1.4: D110_M v4 printing from tested v0.2.1. */
+/* InventuurAPP+Print 0.1.7: D110_M v4 printing from tested v0.2.1. */
 'use strict';
 window.InventoryPrinter = (() => {
   const SERVICE = 'e7810a71-73ae-499d-8c15-faa9aef0c3f2';
@@ -8,6 +8,10 @@ window.InventoryPrinter = (() => {
   const $ = id => document.getElementById(id);
   let device = null, server = null, characteristic = null, pendingWait = null;
   let busy = false, connecting = false, firstPrintAfterConnect = true, lastError = '', feedback = '';
+  let copies=1, printJob=null;
+  function checkCancelled(){if(printJob?.cancelled){const e=new Error('Printimine katkestatud');e.name='AbortError';throw e;}}
+  function changeCopies(delta){if(printJob||busy||connecting)return;copies=Math.max(1,Math.min(999,copies+delta));render();}
+  function cancelPrint(){if(!printJob)return;printJob.cancelled=true;cancelWait();feedback='Katkestan…';render();}
   let phase = 'unconfigured', statusTimer = null, lastPrintWasTest = false;
   function log(text) {
     const el = $('printerLog');
@@ -21,27 +25,33 @@ window.InventoryPrinter = (() => {
   function basePhase() { return connected() ? 'connected' : (remembered() || device ? 'remembered' : 'unconfigured'); }
   function setPhase(next, text = '') { phase = next; feedback = text; render(); }
   function render() {
+    const locked=busy||connecting||!!printJob;
+    const count=$('editPrintCopies');if(count)count.textContent=String(copies);
+    if($('editPrintMinus'))$('editPrintMinus').disabled=locked||copies<=1;
+    if($('editPrintPlus'))$('editPrintPlus').disabled=locked||copies>=999;
+    if($('editPrintCancel')){$('editPrintCancel').hidden=!printJob;$('editPrintCancel').disabled=!!printJob?.cancelled;}
+    if($('editPrintProgress'))$('editPrintProgress').textContent=printJob?(printJob.cancelled?'Katkestan…':`Prinditud ${printJob.done}/${printJob.total}`):'';
     const btn = $('editPrint'), st = $('printerSettingsStatus');
     if (!btn || !st) return;
     const labels = {unconfigured:'Prindi', remembered:'Prindi', connecting:'Ühendan…', connected:'Prindi', printing:'Prindin…', success:'Prinditud', error:'Proovi uuesti'};
     const descriptions = {unconfigured:'Printer pole seadistatud', remembered:'Viimati kasutatud: ' + (remembered()?.deviceName || device?.name || 'Printer') + ' · ühendamata', connecting:'Ühendan printeriga…', connected:'Ühendatud: ' + (device?.name || 'Printer'), printing:'Prindin…', success:'Prinditud', error:'Printeri viga'};
     btn.dataset.printState = phase;
-    btn.disabled = !article() || busy || connecting;
-    btn.querySelector('.editPrintLabel').textContent = labels[phase];
+    btn.disabled = !article() || locked;
+    btn.querySelector('.editPrintLabel').textContent = printJob&&phase==='printing'?`Prindin ${Math.min(printJob.done+1,printJob.total)}/${printJob.total}…`:labels[phase];
     btn.title = feedback || descriptions[phase];
     btn.setAttribute('aria-label', (labels[phase] || 'Prindi') + '. ' + (feedback || descriptions[phase]));
     st.dataset.printState = phase;
     st.querySelector('.printerStatusText').textContent = feedback || descriptions[phase];
-    $('printerConnect').disabled = busy || connecting || connected();
-    $('printerDisconnect').disabled = busy || connecting || !connected();
+    $('printerConnect').disabled = locked || connected();
+    $('printerDisconnect').disabled = locked || !connected();
     const test=$('printerTest');
-    test.disabled = busy || connecting;
+    test.disabled = locked;
     test.dataset.printState = phase;
     const testLabels={unconfigured:'Prindi test',remembered:'Prindi test',connecting:'Ühendan…',connected:'Prindi test',printing:'Prindin…',success:'Test prinditud',error:'Proovi uuesti'};
     test.querySelector('.printerTestLabel').textContent=phase==='success'&&!lastPrintWasTest?'Prindi test':testLabels[phase];
     test.title=feedback || descriptions[phase];
     test.setAttribute('aria-label',testLabels[phase]+'. '+(feedback||descriptions[phase]));
-    $('printerChoose').disabled = busy || connecting;
+    $('printerChoose').disabled = locked;
   }
   function message(text) { $('printerMessageText').textContent = text; $('printerMessage').hidden = false; }
   function closeMessage() { $('printerMessage').hidden = true; }
@@ -118,6 +128,7 @@ window.InventoryPrinter = (() => {
     else await characteristic.writeValue(bytes);
   }
   async function sendAndWait(cmd, data, respCmd, timeout=3000) {
+    if(cmd!==0xf3)checkCancelled();
     const response=respCmd!=null ? waitFor(respCmd,timeout) : null;
     try { await write(packet(cmd,data)); } catch(e) { cancelWait(); throw e; }
     return response ? await response : null;
@@ -302,6 +313,7 @@ window.InventoryPrinter = (() => {
   async function printLabel(articleNo,articleName) {
     if (busy || connecting) return false;
     if (!connected()) throw new Error('Printer pole ühendatud');
+    checkCancelled();
     busy=true; setPhase('printing');
     try {
       const {widthMm,heightMm}=size();
@@ -318,6 +330,7 @@ window.InventoryPrinter = (() => {
       const pageSizeData=[(heightPx>>8)&255,heightPx&255,(widthPx>>8)&255,widthPx&255,0,1,0,0,0,0,0,0,0];
       await sendAndWait(0x13,pageSizeData,0x14);
       for(let r=0;r<rows.length;r++) {
+        checkCancelled();
         if (!connected()) throw new Error('BT ühendus katkes printimise ajal');
         const row=rows[r],hi=(r>>8)&255,lo=r&255;
         if (row.every(b=>b===0)) await write(packet(0x84,[hi,lo,1]));
@@ -331,35 +344,48 @@ window.InventoryPrinter = (() => {
       await sendAndWait(0xe3,[1],0xe4);
       let finished=false;
       for(let i=0;i<30&&!finished;i++) {
+        checkCancelled();
         const data=await sendAndWait(0xa3,[1],0xb3,1500);
         if (data&&data.length>=2&&((data[0]<<8)|data[1])>=1) finished=true;
         if (!finished) await sleep(300);
       }
-      await sendAndWait(0xf3,[1],0xf4);
+      checkCancelled();
+      const ended=await sendAndWait(0xf3,[1],0xf4);
+      if(printJob&&(!finished||!ended))throw new Error('Printeri valmimist ei kinnitatud. Järgmisi koopiaid ei saadeta.');
       log(finished?'Printimine kinnitatud':'Käsud saadetud; valmimist ei kinnitatud');
       setPhase(finished?'success':'connected',finished?'Prinditud':'Käsud saadetud; kontrolli printerit');
       if (statusTimer) clearTimeout(statusTimer);
-      statusTimer=setTimeout(()=>{ if (!busy) setPhase(basePhase()); },3000);
+      statusTimer=setTimeout(()=>{ if (!busy&&!printJob) setPhase(basePhase()); },3000);
       return finished;
-    } catch(e) { lastError=e.message; log('PRINT ERROR: '+lastError); setPhase('error',lastError); throw e; }
+    } catch(e) {
+      if(connected()){try{await sendAndWait(0xf3,[1],0xf4,1500);}catch(_){} }
+      if(e.name==='AbortError'){setPhase(basePhase(),'Printimine katkestatud');throw e;}
+      lastError=e.message;log('PRINT ERROR: '+lastError);setPhase('error',lastError);throw e;
+    }
     finally { busy=false; render(); }
   }
   async function printArticle(selectedDevicePromise=null) {
     const part=article();
-    if (!part || busy || connecting) return;
+    if(!part||busy||connecting||printJob)return;
+    const name=names[part]||'Nimetus puudub';
     closeMessage();
-    if (!connected() && !remembered() && !device) {
-      setPhase('unconfigured');
-      message('Printer pole seadistatud. Vali ja ühenda printer lehel Andmed → 5. Printer.');
-      return;
-    }
-    if (!connected()) {
-      const ok=await connectRemembered(selectedDevicePromise);
-      if (!ok) { message('Printeriga ei õnnestunud ühendust luua. '+lastError+' Ava printeri seaded või proovi uuesti.'); return; }
-    }
-    // Capture article before any async operation, so closing the modal cannot switch the target.
-    try { lastPrintWasTest=false; await printLabel(part,names[part]||'Nimetus puudub'); }
-    catch(e) { message('Printimine ebaõnnestus: '+e.message); }
+    if(!connected()&&!remembered()&&!device){setPhase('unconfigured');message('Printer pole seadistatud. Vali ja ühenda printer lehel Andmed → 5. Printer.');return;}
+    const job={total:copies,done:0,cancelled:false};printJob=job;render();
+    try {
+      if(!connected()){const ok=await connectRemembered(selectedDevicePromise);checkCancelled();if(!ok)throw new Error('Printeriga ei õnnestunud ühendust luua. '+lastError);}
+      lastPrintWasTest=false;
+      while(job.done<job.total){
+        checkCancelled();
+        const finished=await printLabel(part,name);
+        checkCancelled();
+        if(!finished)throw new Error('Printeri valmimist ei kinnitatud. Järgmisi koopiaid ei saadeta.');
+        job.done++;render();
+      }
+      setPhase('success',`Prinditud ${job.done}/${job.total}`);
+    }catch(e){
+      if(e.name==='AbortError')setPhase(basePhase(),`Katkestatud. Kinnitatud ${job.done}/${job.total}; printerisse saadetud silt võib lõpuni väljuda.`);
+      else{lastError=e.message;setPhase('error',lastError);message('Printimine peatatud: '+e.message);}
+    }finally{printJob=null;copies=1;render();}
   }
   async function printTest(selectedDevicePromise=null) {
     closeMessage();
@@ -375,9 +401,12 @@ window.InventoryPrinter = (() => {
     try { lastPrintWasTest=true; await printLabel('1234567890123','Printeri test'); }
     catch(e) { message('Testprint ebaõnnestus: '+e.message); }
   }
-  function onEditOpen() { if (!busy && !connecting) setPhase(basePhase()); else render(); }
-  function onEditClose() { render(); }
+  function onEditOpen() { if(!printJob)copies=1; if (!printJob && !busy && !connecting) setPhase(basePhase()); else render(); }
+  function onEditClose() { if(printJob)cancelPrint();render(); }
   function init() {
+    $('editPrintMinus').addEventListener('click',()=>changeCopies(-1));
+    $('editPrintPlus').addEventListener('click',()=>changeCopies(1));
+    $('editPrintCancel').addEventListener('click',cancelPrint);
     restoreSettings();
     setPhase(basePhase());
     refreshDevices();
@@ -393,7 +422,7 @@ window.InventoryPrinter = (() => {
     $('printerChoose').addEventListener('click', chooseNewPrinter);
     $('printerDisconnect').addEventListener('click', disconnect);
     $('printerTest').addEventListener('click',()=>{
-      if(busy||connecting)return;
+      if(busy||connecting||printJob)return;
       // Request the chooser synchronously while the click has user activation.
       const selection=!connected()&&remembered()?requestSavedPrinterOnClick():null;
       printTest(selection);
